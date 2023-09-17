@@ -6,22 +6,30 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class ScreensViewModel : ViewModel() {
     // Initialize your Variables and Screens here
-    val variablesGtei = Variables()
     val screensGtei = Screens()
 
-    val listInitial = screensGtei.start.listScreens
-
-    private val _screens = MutableStateFlow(value = listInitial)
-    val screens = _screens.asStateFlow()
-
-    private val _selectedScreen = MutableStateFlow<Screen?>(null)
+    private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.start)
     val selectedScreen = _selectedScreen.asStateFlow()
 
-    init {
-        // Fetch your list of screens from your data source here
-    }
+    private val _message = MutableStateFlow(screensGtei.start.message)
+    val message = _message.asStateFlow()
 
     fun onScreenSelected(screen: Screen) {
+        screen?.listScreens?.forEach { it ->
+            if (it.imageResId == 0) {
+                it.imageResId = screen.imageResId
+            }
+        }
         _selectedScreen.value = screen
+        _selectedScreen.value?.let {
+            _message.value = retrieveMessage(it, "Try")
+        }
+    }
+    private fun retrieveMessage(screen: Screen?, opcioMessage: String): String {
+        return when (opcioMessage) {
+            "Resultat1" -> "Els Medicaments son : "
+            "Resultat2" -> "El Medicament es : "
+            else -> screen?.message ?: ""
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.geti.ui.theme
+package com.trueta.gtei.ui.theme
 
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -33,7 +33,7 @@ val White = Color(0xFFFFFFFF)
 internal val DarkColorScheme = darkColorScheme(
     primary = BlauUdg,
     secondary = TronjaUdg,
-    background =White,
+    background = White,
     tertiary = White
 
 )
@@ -41,6 +41,6 @@ internal val DarkColorScheme = darkColorScheme(
 internal val LightColorScheme = lightColorScheme(
     primary = BlauUdg,
     secondary = TronjaUdg,
-    background =White,
+    background = White,
     tertiary = White
 )

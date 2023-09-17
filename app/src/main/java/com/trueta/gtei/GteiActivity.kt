@@ -4,10 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.trueta.gtei.ui.theme.GteiTheme
 
 class GteiActivity : ComponentActivity() {
@@ -16,17 +26,50 @@ class GteiActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val selectedScreen by viewModel.selectedScreen.collectAsState()
+            val message by viewModel.message.collectAsState()
+
             GteiTheme {
-                Surface {
-                    val selectedScreen by viewModel.selectedScreen.collectAsState()
-                    val screens by viewModel.screens.collectAsState(initial = emptyList())
-
-                    ScreenSelector(listScreen = screens) { // Always display the ScreenSelector
-                        viewModel.onScreenSelected(it)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(5.dp)
+                            .weight(.095f),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        MessageDisplay(message)
                     }
-
-                    if (selectedScreen == null) { // Display this text only if no screen is selected
-                        Text("No screen selected.")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.background)
+                            .weight(.005f),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {}
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(.9f)
+                            .background(Color.White)
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 1.dp,
+                                bottom = 5.dp
+                            ), // padding right and left, top and bottom
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        selectedScreen?.let {
+                            ButtonDisplay(listScreen = it.listScreens) { // Always display the ScreenSelector
+                                viewModel.onScreenSelected(it)
+                            }
+                        }
                     }
                 }
             }
