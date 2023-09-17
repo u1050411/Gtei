@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fg">Filtració Glomerular</string>
+    <string name="weight">Pes</string>
+    <string name="height">Alçada</string>
+    <string name="ml_per_min">ml/min</string>
+    <string name="kg">Kg</string>
+    <string name="cm">cm</string>
+    <string name="Geti">GUIA DE TRACTAMENT EMPÍRIC DE LES INFECCIONS</string>
+    <string name="app_name">Gtei</string>
+</resources>
