@@ -66,9 +66,7 @@ class GteiActivity : ComponentActivity() {
                         contentAlignment = Alignment.TopCenter
                     ) {
                         selectedScreen?.let {
-                            ButtonDisplay(listScreen = it.listScreens) { // Always display the ScreenSelector
-                                viewModel.onScreenSelected(it)
-                            }
+                            TryDisplay(it)
                         }
                     }
                 }
