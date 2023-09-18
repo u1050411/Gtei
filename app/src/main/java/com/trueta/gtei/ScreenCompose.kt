@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,10 +33,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.StateFlow
 
 
 @Composable
-fun TryDisplay(screen: Screen) {
+fun TryDisplay(screen: Screen, viewModel: ScreensViewModel) {
 
     val viewModel: ScreensViewModel = viewModel()
 
@@ -42,10 +45,10 @@ fun TryDisplay(screen: Screen) {
 
     when (option) {
         "Try" -> {
-            ButtonDisplay(screen.listScreens)
+            ButtonDisplay(screen.listScreens, viewModel = viewModel)
         }
         "CheckBox" -> {
-            CheckboxesDisplay(screen.listScreens)
+            CheckboxesDisplay(screen = screen, viewModel = viewModel)
         }
 
     }
@@ -80,17 +83,16 @@ fun MessageDisplay(message: String) {
     )
 }
 @Composable
-fun ButtonDisplay(listScreen: List<Screen>){
+fun ButtonDisplay(listScreen: List<Screen>, viewModel: ScreensViewModel){
     LazyColumn {
         items(listScreen.size) { index ->
-            FunctionButton(listScreen[index])
+            FunctionButton(listScreen[index], viewModel = viewModel)
         }
     }
 }
 
 @Composable
-fun FunctionButton( screen: Screen) {
-    val viewModel: ScreensViewModel = viewModel()
+fun FunctionButton(screen: Screen, viewModel: ScreensViewModel) {
     OutlinedButton(
         onClick = { viewModel.onScreenSelected(screen) },
         shape = RoundedCornerShape(0.dp),
@@ -131,29 +133,34 @@ fun FunctionButtonContent(screen: Screen?) {
 }
 
 @Composable
-fun CheckboxesDisplay(screen: Screen) {
-    // Initialize switches should be done outside, but for the purpose of this example, it's included here.
-    val viewModel: ScreensViewModel = viewModel()
-    val switches = viewModel.initializeSwitches()
+fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
+    viewModel.initializeSwitches(screen)
+    val switches = viewModel.switchesPublic
+    val alergiaSeverSwitch: StateFlow<Boolean>? = switches?.get(Variables().alergiaSevera.name) as? StateFlow<Boolean>
+    val listVariables : MutableList<Variable> = screen.listVar
 
-    Column {
-        LazyColumn {
-            // Directly using screen?.listVar if not null
-            items(screen?.listVar ?: listOf()) { variable ->
-                // Only include items that exist in switches
-                if (tryView.switches.containsKey(variable.name)) {
-                    MultiSelectButton(variable, tryView)
-                    Spacer(modifier = Modifier.height(5.dp))
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            items(listVariables.size) { index ->  // Use the size of listVariables
+                val variable = listVariables[index]  // Get the item from the list by index
+                val nameVariable = variable.name
+                if (switches != null) {
+                    if (switches.containsKey(nameVariable)) {
+                        MultiSelectButton(variable = variable, nameVariable = nameVariable, viewModel = viewModel)
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
                 }
             }
         }
+
         OutlinedButton(
-            onClick = {
-                screen?.let {
-                    tryView.onSubmit(it)
-                    navController.navigate("Try")
-                }
-            },
+            onClick = { viewModel.onSubmit(screen) },  // Simplified with non-null screen
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -164,61 +171,64 @@ fun CheckboxesDisplay(screen: Screen) {
 }
 
 
-@Composable
-fun MultiSelectButton(variable: Variable, tryView: TryView) {
-    // Collect state from flows
-    val isCheckedFlow = tryView.isCheckboxChecked(variable.name).collectAsState()
-    val isAlergiaSeveraCheckedFlow =
-        tryView.isCheckboxChecked(tryView.alergiaTrySevera.name).collectAsState()
 
-    // Initialize label value
-    val label: String
-    // When the button is not alergiaSevera
-    if (variable.name != tryView.alergiaTrySevera.name) {
-        // Update label value based on conditions
+
+@Composable
+fun MultiSelectButton(
+    variable: Variable,
+    nameVariable: String,
+    viewModel: ScreensViewModel,
+
+    ) {
+
+    val alergiaSeveraName = Variables().alergiaSevera.name
+    val alergiaPenicilinaName = Variables().alergiaPenicilina.name
+
+    val AlergiaSeveraCheckedFlow = (viewModel.isCheckboxChecked(alergiaSeveraName)?.collectAsState())
+    val CheckedFlow = (viewModel.isCheckboxChecked(nameVariable)?.collectAsState())
+
+    val isAlergiaSeveraCheckedFlow = AlergiaSeveraCheckedFlow?.value == true
+    val isCheckedFlow = CheckedFlow?.value == true
+
+    var label = nameVariable
+
+    if (nameVariable != alergiaSeveraName) {
         label = when {
-            isAlergiaSeveraCheckedFlow.value && isCheckedFlow.value && variable.name == tryView.tryAlergiaPenicilina.name -> {
+
+            isAlergiaSeveraCheckedFlow && !isCheckedFlow && nameVariable == alergiaPenicilinaName -> {
                 "Al·lèrgia Penicil·lina Greu"
             }
 
-            isAlergiaSeveraCheckedFlow.value && !isCheckedFlow.value && variable.name == tryView.tryAlergiaPenicilina.name -> {
-                // If alergiaPenicilina is unchecked, revert the label
-                tryView.changeCheckbox(variable.name)
-                tryView.changeCheckbox(tryView.alergiaTrySevera.name)
-                variable.name
+            isAlergiaSeveraCheckedFlow && nameVariable == alergiaPenicilinaName -> {
+                viewModel.toggleCheckboxState(alergiaSeveraName)
+                viewModel.toggleCheckboxState(nameVariable)
+                nameVariable
             }
 
-            isCheckedFlow.value && variable.name == tryView.tryAlergiaPenicilina.name -> {
+            isCheckedFlow && nameVariable == alergiaPenicilinaName -> {
                 "Al·lèrgia Penicil·lina Lleu"
             }
 
             else -> {
-                variable.name
+                nameVariable
             }
         }
-
-        // Render CheckboxOptionRow
+    }
         CheckboxOptionRow(
             label = label,
-            isCheckedFlow = isCheckedFlow.value,
-            onCheckedChange = {
-                tryView.toggleCheckboxState(variable.name)
-            }
+            isCheckedFlow = isCheckedFlow,
+            onCheckedChange = { viewModel.toggleCheckboxState(nameVariable) }
         )
-    }
 
-    // When the button is alergiaPenicilina and it's checked, and alergiaSevera is not checked
-    if (variable.name == tryView.tryAlergiaPenicilina.name && isCheckedFlow.value && !isAlergiaSeveraCheckedFlow.value) {
+    // Additional logic for alergiaSevera
+    if (nameVariable == alergiaSeveraName && isCheckedFlow && !isAlergiaSeveraCheckedFlow) {
         CheckboxOptionRow(
-            label = tryView.alergiaTrySevera.name,
-            isCheckedFlow = isAlergiaSeveraCheckedFlow.value,
-            onCheckedChange = {
-                tryView.toggleCheckboxState(tryView.alergiaTrySevera.name)
-            }
+            label = alergiaSeveraName,
+            isCheckedFlow = isAlergiaSeveraCheckedFlow,
+            onCheckedChange = { viewModel.toggleCheckboxState(alergiaSeveraName) }
         )
     }
 }
-
 
 @Composable
 fun CheckboxOptionRow(
