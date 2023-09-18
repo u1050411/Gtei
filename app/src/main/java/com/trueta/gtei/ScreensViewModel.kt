@@ -10,10 +10,10 @@ class ScreensViewModel : ViewModel() {
     // Initialize your Variables and Screens here
     val screensGtei = Screens()
 
-    private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.respiratori1)
+    private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.start)
     val selectedScreen = _selectedScreen.asStateFlow()
 
-    private val _message = MutableStateFlow(screensGtei.respiratori1.message)
+    private val _message = MutableStateFlow(screensGtei.start.message)
     val message = _message.asStateFlow()
 
     fun onScreenSelected(screen: Screen) {
@@ -37,9 +37,9 @@ class ScreensViewModel : ViewModel() {
     fun goScreen(screen: Screen): String {
         return when {
             screen.listScreens.isEmpty() -> {
-                if (screen.listVar.isEmpty()) "slider" else "checkbox"
+                if (screen.listVar.isEmpty()) "Slider" else "CheckBox"
             }
-            else -> "try"
+            else -> "Try"
         }
     }
     // Immutable Map

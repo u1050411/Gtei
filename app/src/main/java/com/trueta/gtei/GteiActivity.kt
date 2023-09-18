@@ -66,7 +66,7 @@ class GteiActivity : ComponentActivity() {
                         contentAlignment = Alignment.TopCenter
                     ) {
                         selectedScreen?.let {
-                            CheckboxesDisplay(it, viewModel)  // Pass viewModel as an argument
+                            TryDisplay(it, viewModel)  // Pass viewModel as an argument
                         }
                     }
                 }

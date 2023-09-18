@@ -33,7 +33,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.flow.StateFlow
 
 
 @Composable
@@ -134,11 +133,9 @@ fun FunctionButtonContent(screen: Screen?) {
 
 @Composable
 fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
-    screen.listVar.addAll(listOf(Variables().isCvc,Variables().celulitis, Variables().isCvc, Variables().celulitis,Variables().isFocusAbdominal, Variables().marsa))
     viewModel.initializeSwitches(screen)
     val switches = viewModel.switchesPublic
-    val alergiaSeverSwitch: StateFlow<Boolean>? = switches?.get(Variables().alergiaSevera.name) as? StateFlow<Boolean>
-    val listVariables = screen.listVar
+     val listVariables = screen.listVar
 
 
     Column(
