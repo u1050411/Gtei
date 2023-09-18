@@ -1,11 +1,10 @@
 package com.trueta.gtei
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.reflect.full.memberProperties
 
 class ScreensViewModel : ViewModel() {
     // Initialize your Variables and Screens here
@@ -43,34 +42,56 @@ class ScreensViewModel : ViewModel() {
             else -> "try"
         }
     }
+    // Immutable Map
+    private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
 
-    private var switches: Map<String, MutableStateFlow<Boolean>> = mutableMapOf()
-
+    // Expose an immutable map to the outside
     val switchesPublic: Map<String, StateFlow<Boolean>>
         get() = switches.mapValues { it.value.asStateFlow() }
 
-    fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean> ?=
+    // Check if a checkbox is checked
+    fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean>? =
         switches[nameVariable]?.asStateFlow()
 
+    // Toggle the state of a checkbox
     fun toggleCheckboxState(variableName: String) {
-        switches[variableName]?.value = !(switches[variableName]?.value ?: false)
+        // Clone existing map, modify clone, then replace original map
+        val newSwitches = switches.toMutableMap()
+        newSwitches[variableName]?.value = !(newSwitches[variableName]?.value ?: false)
+        switches = newSwitches
     }
 
+
+
+    fun Variables.getAllVarBools(): List<VarBool> {
+        return this::class.memberProperties.filter { it.returnType.classifier == VarBool::class }
+            .mapNotNull { it as? VarBool }
+    }
+
+    // Initialize switches based on screen selection and available variables
     fun initializeSwitches(screen: Screen?) {
-        val select = selectedScreen.value
+        val select = selectedScreen.value ?: return
         val tryAlergiaPenicilina = Variables().alergiaPenicilina
         val alergiaTrySevera = Variables().alergiaSevera
 
-        select?.listVar?.firstOrNull { it.name == tryAlergiaPenicilina.name }?.let {
-            switches[alergiaTrySevera.name]
+        val newSwitches = mutableMapOf<String, MutableStateFlow<Boolean>>()
+
+        // Special handling for alergiaTrySevera
+        select.listVar.firstOrNull { it.name == tryAlergiaPenicilina.name }?.let {
+            newSwitches[alergiaTrySevera.name] = MutableStateFlow(false)
         }
 
-        select?.listVar?.forEach { variable ->
+        // Initialize switches for other variables
+        for (variable in select.listVar) {
             if (variable is VarBool || variable.name == tryAlergiaPenicilina.name) {
-                switches[variable.name]
+                newSwitches[variable.name] = MutableStateFlow(false)
             }
         }
+
+        // Replace the existing switches with the new ones
+        switches = newSwitches
     }
+
 
 
   // Checkbox

@@ -2,6 +2,7 @@ package com.trueta.gtei
 
 import androidx.annotation.StringRes
 import java.io.Serializable
+import kotlin.reflect.full.memberProperties
 
 
 interface Variable : Serializable {
@@ -87,7 +88,19 @@ data class Variables(
     var fg: VarBool = VarBool("Filtrat glomerular <30 ml/min"),
     var postCpre: VarBool = VarBool("post-CPRE"),
     var celulitis: VarBool = VarBool("Celulitis"),
-) : Serializable
+) : Serializable{
+    companion object {
+        fun getAllVarBools(instance: Variables): List<VarBool> {
+            return instance::class.memberProperties
+                .filter { it.returnType.classifier == VarBool::class }
+                .mapNotNull { it.get(instance as Nothing) as? VarBool }
+        }
+        fun getAllVarVariables( ): List<Variables> {
+            val listBol = this.getAllVarBools(Variables())
+            return listBol.map { it as? Variables }.filterNotNull()
+        }
+    }
+}
 
 
 

@@ -134,10 +134,12 @@ fun FunctionButtonContent(screen: Screen?) {
 
 @Composable
 fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
+    screen.listVar.addAll(listOf(Variables().isCvc,Variables().celulitis, Variables().isCvc, Variables().celulitis,Variables().isFocusAbdominal, Variables().marsa))
     viewModel.initializeSwitches(screen)
     val switches = viewModel.switchesPublic
     val alergiaSeverSwitch: StateFlow<Boolean>? = switches?.get(Variables().alergiaSevera.name) as? StateFlow<Boolean>
-    val listVariables : MutableList<Variable> = screen.listVar
+    val listVariables = screen.listVar
+
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -147,8 +149,9 @@ fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
                 .weight(1f)
                 .fillMaxWidth()
         ) {
+
             items(listVariables.size) { index ->  // Use the size of listVariables
-                val variable = listVariables[index]  // Get the item from the list by index
+                val variable = listVariables[index]  as Variable// Get the item from the list by index
                 val nameVariable = variable.name
                 if (switches != null) {
                     if (switches.containsKey(nameVariable)) {
@@ -190,38 +193,34 @@ fun MultiSelectButton(
     val isAlergiaSeveraCheckedFlow = AlergiaSeveraCheckedFlow?.value == true
     val isCheckedFlow = CheckedFlow?.value == true
 
-    var label = nameVariable
+    var label = when {
 
-    if (nameVariable != alergiaSeveraName) {
-        label = when {
+        isAlergiaSeveraCheckedFlow && isCheckedFlow && nameVariable == alergiaPenicilinaName -> {
+            "Al·lèrgia Penicil·lina Greu"
+        }
 
-            isAlergiaSeveraCheckedFlow && !isCheckedFlow && nameVariable == alergiaPenicilinaName -> {
-                "Al·lèrgia Penicil·lina Greu"
-            }
-
-            isAlergiaSeveraCheckedFlow && nameVariable == alergiaPenicilinaName -> {
-                viewModel.toggleCheckboxState(alergiaSeveraName)
-                viewModel.toggleCheckboxState(nameVariable)
-                nameVariable
-            }
-
-            isCheckedFlow && nameVariable == alergiaPenicilinaName -> {
-                "Al·lèrgia Penicil·lina Lleu"
-            }
-
-            else -> {
-                nameVariable
-            }
+        isAlergiaSeveraCheckedFlow && nameVariable == alergiaPenicilinaName -> {
+            viewModel.toggleCheckboxState(alergiaSeveraName)
+            viewModel.toggleCheckboxState(nameVariable)
+            "Al·lèrgia Penicil·lina Lleu"
+        }
+        else -> {
+            nameVariable
         }
     }
+
+    if (nameVariable != alergiaSeveraName) {
+
         CheckboxOptionRow(
             label = label,
             isCheckedFlow = isCheckedFlow,
             onCheckedChange = { viewModel.toggleCheckboxState(nameVariable) }
         )
+    }
+
 
     // Additional logic for alergiaSevera
-    if (nameVariable == alergiaSeveraName && isCheckedFlow && !isAlergiaSeveraCheckedFlow) {
+    if (nameVariable == alergiaPenicilinaName && isCheckedFlow && !isAlergiaSeveraCheckedFlow) {
         CheckboxOptionRow(
             label = alergiaSeveraName,
             isCheckedFlow = isAlergiaSeveraCheckedFlow,

@@ -68,5 +68,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.1")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation ("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
 
 }
