@@ -1,6 +1,7 @@
 package com.trueta.gtei
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,8 @@ class ScreensViewModel : ViewModel() {
     private var pairMedicationTry: MutableStateFlow<Pair<List<Int>?, Medication?>?> =
         MutableStateFlow(null)
     val medication: Medication? get() = pairMedicationTry.value?.second
+    private var _resultPair: List<Pair<String, String>> = emptyList()
+    val resultPair: List<Pair<String, String>> get() = _resultPair
 
     fun onScreenSelected(screen: Screen) {
         screen?.listScreens?.forEach { it ->
@@ -68,6 +71,16 @@ class ScreensViewModel : ViewModel() {
             isListScreensEmpty -> "CheckBox"
             else -> "Try"
         }
+    }
+
+    fun resetState() {
+             DisposableEffect(Unit) {
+            onDispose {       _selectedScreen.value = screensGtei.start
+                _message.value = screensGtei.start.message
+                pairMedicationTry.value = null
+                switches = mapOf() }
+        }
+
     }
 
     // Check if a checkbox is checked
@@ -171,26 +184,21 @@ class ScreensViewModel : ViewModel() {
     private val heightVar = mutableStateOf(0.0)
     val sexVar = mutableStateOf(Gender.Men)
 
-    fun initializeRangeSlice(sliders: Medication, sexValue: Gender, screen: Screen): List<RangeSlice> {
+    fun initializeRangeSlice(sliders: Medication, isMen: Boolean, haveFg: Boolean): List<RangeSlice> {
         val tempList = mutableListOf<RangeSlice>()  // Lista mutable temporal
-        val haveFg =screen.listVar?.contains(Variables().fg) ?: false
-
         if (sliders.fg) {
-            var initialFg = if (sexValue == Gender.Men) 90f else 95f
+            var initialFg = if (isMen) 90f else 95f
             initialFg = if (haveFg) 20f else initialFg
             tempList.add(createRangeSlice(R.string.fg, 0..150, initialFg, R.string.ml_per_min) { newValue -> updateFg(newValue) })
         }
-
         if (sliders.weight) {
-            val initialWeight = if (sexValue == Gender.Men) 85f else 65f
+            val initialWeight = if (isMen) 85f else 65f
             tempList.add(createRangeSlice(R.string.weight, 0..300, initialWeight, R.string.kg) { newValue -> updateWeight(newValue) })
         }
-
         if (sliders.weight) {  // Corregí la condición aquí
-            val initialHeight = if (sexValue == Gender.Men) 175f else 165f
+            val initialHeight = if (isMen) 175f else 165f
             tempList.add(createRangeSlice(R.string.height, 0..240, initialHeight, R.string.cm) { newValue -> updateHeight(newValue) })
         }
-
         return tempList.toList()  // Convertir la lista mutable a inmutable
     }
 
@@ -215,6 +223,37 @@ class ScreensViewModel : ViewModel() {
     fun updateGender(gender: Gender) {
         sexVar.value = gender
     }
+
+    // Result
+
+    // Method to determine the text size based on the text length
+    private fun determineTextSize(textLength: Int): Int {
+        return when {
+            textLength < 10 -> 40
+            textLength < 20 -> 30
+            else -> 20
+        }
+    }
+
+    // Method to determine the text size for medicine and dose
+    fun sizeText(resultsPair: List<Pair<String, String>>): Pair<Int, Int> {
+        // Finding maximum lengths for first and second elements in pairs
+        val maxFirst = resultsPair.map { it.first.length }.maxOrNull() ?: 0
+        val maxSecond = resultsPair.map { it.second.length }.maxOrNull() ?: 0
+
+        // Determine sizes based on maximum lengths
+        val max = determineTextSize(maxFirst)
+        val min = determineTextSize(maxSecond)
+
+        // Adjust max and min if needed
+        return if (max > min) {
+            Pair(if (min == 20) 30 else 40, min)
+        } else {
+            Pair(max, if (max == 20) 30 else 40)
+        }
+    }
+
+
 
 }
 

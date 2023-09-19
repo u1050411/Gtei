@@ -1,6 +1,7 @@
 package com.trueta.gtei
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScopeInstance.weight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,7 +52,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -440,35 +443,33 @@ fun CheckboxOptionRow(
     }
 }
 
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SliderDisplay(screen: Screen, viewModel: ScreensViewModel) {
+    // Initialize switches and get current values
     viewModel.initializeSwitches(screen)
-    val currentSlider = viewModel.medication
-    val currentGender = currentSlider.
+    val currentSlider = viewModel.medication ?: return
+    val currentGender = viewModel.sexVar.value
+    val isMen = (currentGender == Gender.Men)
+    val slidersDataRange = viewModel.initializeRangeSlice(currentSlider, isMen, screen.listVar.contains(Variables().fg))
 
-
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-
-            items(listVariables.size) { index ->  // Use the size of listVariables
-                currentSlider?.let { slider ->
-                    if (slider.sex) {
-                        GenderSelector()
-                    }
-                    VariableSlider(slider, currentGender)
-                }
+            if (isMen) {
+                stickyHeader { GenderSelector(viewModel) }
+            }
+            items(slidersDataRange.size) { index ->
+                val data = slidersDataRange[index]
+                SliderNumeric(data = data, viewModel = viewModel)
+                drawLines(count=2, colorLine = MaterialTheme.colorScheme.primary)
             }
         }
-
         OutlinedButton(
-            onClick = { viewModel.onSubmit(screen) },  // Simplified with non-null screen
+            onClick = { viewModel.onSubmit(screen) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -478,21 +479,8 @@ fun SliderDisplay(screen: Screen, viewModel: ScreensViewModel) {
     }
 }
 
-
-
-
-fun navigateAndUpdateOriginSlider(
-    navController: NavController,
-    sliderView: SliderView,
-) {
-    sliderView.onSubmitSlice()
-    sliderView.onSubmitSlice()
-    navController.navigate("Try")
-}
-
-
 @Composable
-fun GenderSelector() {
+fun GenderSelector(viewModel: ScreensViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -515,30 +503,30 @@ fun GenderSelector() {
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            RadioButtonOption("Home", Gender.Men)
+            RadioButtonOption("Home", Gender.Men, viewModel)
             Spacer(modifier = Modifier.width(10.dp))
-            RadioButtonOption("Dona", Gender.Women)
+            RadioButtonOption("Dona", Gender.Women, viewModel)
         }
     }
-    DoubleLine()
+    drawLines(count=2, colorLine=MaterialTheme.colorScheme.primary)
 }
 
 
 @Composable
-fun RadioButtonOption(label: String, gender: Gender) {
-    val sliderView = viewModel<SliderView>()
-    val isSelected = gender == sliderView.sexVar.value
+fun RadioButtonOption(label: String, gender: Gender, viewModel: ScreensViewModel) {
+    val takeGender =(gender == viewModel.sexVar.value)
+    val isSelected = takeGender
 
     Row(
         Modifier.selectable(
-            selected = (gender == sliderView.sexVar.value),
-            onClick = { sliderView.updateGender(gender) }
+            selected = (takeGender),
+            onClick = { viewModel.updateGender(gender) }
         ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
-            selected = (gender == sliderView.sexVar.value),
-            onClick = { sliderView.updateGender(gender) },
+            selected = (takeGender),
+            onClick = { viewModel.updateGender(gender) },
             colors = RadioButtonDefaults.colors(
                 selectedColor = MaterialTheme.colorScheme.primary,
                 unselectedColor = MaterialTheme.colorScheme.secondary
@@ -558,38 +546,19 @@ fun RadioButtonOption(label: String, gender: Gender) {
 }
 
 
-@Composable
-fun VariableSlider(sliders: Medication, sexValue: Gender) {
-    val sliderView = viewModel<SliderView>()
-    val slidersDataRange: List<RangeSlice>?   // Variable regular en lugar de mutableStateOf
-
-    slidersDataRange = sliderView.initializeRangeSlice(sliders, sexValue)
-    slidersDataRange.forEach { data ->
-        SliderNumeric(data = data, sliders)
-        DoubleLine()
-    }
-}
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SliderNumeric(data: RangeSlice, sliders: Medication) {
-    val sliderView = viewModel<SliderView>()
+fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
+
     val context = LocalContext.current
     var sliderValue by remember { mutableStateOf(data.initialValue) }
     var valorInitial by remember { mutableStateOf(0f) }
-    val sex = sliderView.sexVar.value
+    val sex = viewModel.sexVar.value
     var showDialog by remember { mutableStateOf(false) }
     var dialogValue by remember { mutableStateOf(TextFieldValue("")) }
     var showErrorDialog by remember { mutableStateOf(false) }
     val name = context.getString(data.name)
 
-    LaunchedEffect(sex) {
-        valorInitial = sliderView.initializeRangeSlice(sliders, sex)
-            .find { it.name == data.name }?.initialValue ?: 0f
-        sliderValue = valorInitial
-    }
 
     val focusRequester = remember { FocusRequester() }
 
@@ -599,7 +568,6 @@ fun SliderNumeric(data: RangeSlice, sliders: Medication) {
             focusRequester.requestFocus()
         }
     }
-
 
     if (showDialog) {
         AlertDialog(
@@ -702,3 +670,115 @@ fun SliderNumeric(data: RangeSlice, sliders: Medication) {
         )
     }
 }
+@Composable
+fun ScreenResult(medicamentList: List<Pair<String, String>>, viewModel: ScreensViewModel) {
+
+    val sizeText = viewModel.sizeText(medicamentList)
+    val sizeTextDrugsLogic = sizeText.first // Size of the text for the drugs
+    val sizeTextDoseLogic = sizeText.second // Size of the text for the dose
+
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current.density
+    val screenWidthDp = configuration.screenWidthDp // The screen width as dp
+    val columnWidthDp = screenWidthDp * 0.15f // 15% of the screen width
+    val totalColumnWidth = medicamentList.size * columnWidthDp //
+    val totalColumnHeightPixels = totalColumnWidth * density  // Convert dp to pixels
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(
+            modifier = Modifier
+                .requiredHeight(totalColumnHeightPixels.dp) // Set the height of the all column
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            for (entry in medicamentList) {
+                drawLines(count=2, colorLine = MaterialTheme.colorScheme.primary)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (entry.first.isNotEmpty()) {
+                        Text(
+                            text = entry.first.uppercase(),
+                            fontSize = sizeTextDrugsLogic.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (entry.second.isNotEmpty()) {
+                        Text(
+                            text = entry.second,
+                            fontSize = sizeTextDoseLogic.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            drawLines(count=2, colorLine = MaterialTheme.colorScheme.primary)
+            Button(
+                onClick = {
+                    viewModel.resetState()
+                }, // Use the reusable function here
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp)
+            ) {
+                Text(text = "Tornar a l'inici")
+            }
+        }
+    }
+}
+
+
+/**
+ * Draw lines
+ * @param count Number of lines to draw
+ * @param colorLine Color of the line
+ */
+@Composable
+fun drawLines(count: Int, colorLine: Color = MaterialTheme.colorScheme.primary) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 2.dp)
+            .height(20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        repeat(count) {
+            Divider(
+                color = colorLine,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 2.dp)
+                    .height(1.dp)
+            )
+        }
+    }
+}
+
+
