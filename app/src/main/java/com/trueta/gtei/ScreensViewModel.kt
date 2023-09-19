@@ -110,7 +110,11 @@ class ScreensViewModel : ViewModel() {
 
   // Checkbox
 
-    // Safe unwrapping in onSubmit function
+   /**
+    logic for drugs depends buttons and checkboxes
+    * @param currentScreen The current screen containing various lists.
+     * @return The name of the next screen.
+     * */
     fun onSubmit(currentScreen: Screen) {
         val controllerLogic = ControllerLogic()
         val currentLogic = currentScreen.copy()
@@ -120,30 +124,40 @@ class ScreensViewModel : ViewModel() {
         updateVarStringValues(updatedListVar)
         pairMedicationTry.value = controllerLogic.processTryScreen(currentLogic)
         currentScreen.listVar = updatedListVar
+       _selectedScreen.value = currentScreen
     }
 
-    // --- Private Helper Methods ---
+    /**
+     * Updates the value of variable in the listVar list.
+     * @param listVar The list of variables to update.
+     */
 
     private fun updateVarStringValues(listVar: MutableList<Variable>) {
         val tryAlergiaPenicilina = Variables().alergiaPenicilina.name
         val isCheckedPenicilina = (isCheckboxChecked(tryAlergiaPenicilina)?.value) ?: false
         val isCheckedSevera = (isCheckboxChecked((Variables().alergiaSevera.name))?.value) ?: false
 
-        val value = when {
-            isCheckedPenicilina && isCheckedSevera -> "Severa"
-            isCheckedPenicilina -> "Sí"
-            else -> "No"
+        listVar.find { it.name == tryAlergiaPenicilina }?.let { variable ->
+            (variable as? VarString)?.valorString =  when {
+                isCheckedPenicilina && isCheckedSevera -> "Severa"
+                isCheckedPenicilina -> "Sí"
+                else -> "No"
+            }
         }
-
-        updateVarStringValue(listVar, tryAlergiaPenicilina, value)
+        updateVarStringValue(listVar)
     }
+    /**
+     * Updates the value of a VarString variable in the listVar list.
+     * @param listVar The list of variables to update.
+     * @param varName The name of the variable to update.
+     * @param value The new value of the variable.
+     */
 
-    private fun updateVarStringValue(listVar: MutableList<Variable>, varName: String, value: String) {
-        listVar.find { it.name == varName }?.let { variable ->
-            (variable as? VarString)?.valorString = value
+    private fun updateVarStringValue(listVar: MutableList<Variable>) {
+        listVar.forEach() { variable ->
+            // if variable is VarBool, valor = true
+            (variable as? VarBool)?.valor = true
         }
     }
-
-
 
 }

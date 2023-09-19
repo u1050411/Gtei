@@ -18,8 +18,7 @@ class GteiActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val selectedScreen by viewModel.selectedScreen.collectAsState()
-            val message by viewModel.message.collectAsState()
+
 
             val showScreenTry = remember { mutableStateOf(false) }
 
@@ -28,7 +27,7 @@ class GteiActivity : ComponentActivity() {
                 showScreenTry.value = true
             }, 3000)
 
-            ScreensGtei(showScreenTry, selectedScreen, message, viewModel)
+            ScreensGtei(showScreenTry, viewModel)
         }
     }
 }

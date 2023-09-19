@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -41,9 +42,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.trueta.gtei.ui.theme.GteiTheme
 
 @Composable
-fun ScreensGtei(showScreenTry: MutableState<Boolean>, selectedScreen: Screen?, message: String, viewModel: ScreensViewModel) {
+fun ScreensGtei(showScreenTry: MutableState<Boolean>, viewModel: ScreensViewModel) {
    if (showScreenTry.value) {
-       ScreenTry(selectedScreen, message, viewModel)
+       ScreenTry(viewModel)
     } else {
        ScreenStart()
     }
@@ -121,7 +122,9 @@ fun ScreenStart() {
 }
 
 @Composable
-fun ScreenTry(selectedScreen: Screen?, message: String, viewModel: ScreensViewModel) {
+fun ScreenTry(viewModel: ScreensViewModel) {
+    val selectedScreen by viewModel.selectedScreen.collectAsState()
+    val message by viewModel.message.collectAsState()
     GteiTheme {
         Column(
             modifier = Modifier
