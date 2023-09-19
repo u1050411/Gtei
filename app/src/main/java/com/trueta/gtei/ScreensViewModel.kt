@@ -67,7 +67,6 @@ class ScreensViewModel : ViewModel() {
         }
     }
 
-
     // Check if a checkbox is checked
     fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean>? =
         switches[nameVariable]?.asStateFlow()
@@ -109,12 +108,7 @@ class ScreensViewModel : ViewModel() {
         switches = newSwitches
     }
 
-
-
   // Checkbox
-
-
-
 
     // Safe unwrapping in onSubmit function
     fun onSubmit(currentScreen: Screen) {

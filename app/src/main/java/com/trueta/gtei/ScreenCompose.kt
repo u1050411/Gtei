@@ -229,7 +229,7 @@ fun FunctionButton(screen: Screen, viewModel: ScreensViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 2.dp)
-            .border(1.dp, MaterialTheme.colorScheme.primary)
+            .border(1.dp, MaterialTheme.colorScheme.secondary)
     ) {
         FunctionButtonContent(screen)
     }
