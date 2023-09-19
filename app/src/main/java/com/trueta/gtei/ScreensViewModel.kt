@@ -1,5 +1,7 @@
 package com.trueta.gtei
 
+import androidx.annotation.StringRes
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +27,8 @@ class ScreensViewModel : ViewModel() {
 
     // This flow stores a pair of a list of integers and a Medication object.
     // It's initialized as null, but consider using a default value.
-    private var pairMedicationTry: MutableStateFlow<Pair<List<Int>?, Medication?>?> = MutableStateFlow(null)
+    private var pairMedicationTry: MutableStateFlow<Pair<List<Int>?, Medication?>?> =
+        MutableStateFlow(null)
     val medication: Medication? get() = pairMedicationTry.value?.second
 
     fun onScreenSelected(screen: Screen) {
@@ -39,6 +42,7 @@ class ScreensViewModel : ViewModel() {
             _message.value = retrieveMessage(it, "Try")
         }
     }
+
     private fun retrieveMessage(screen: Screen?, opcioMessage: String): String {
         return when (opcioMessage) {
             "Resultat1" -> "Els Medicaments son : "
@@ -55,14 +59,13 @@ class ScreensViewModel : ViewModel() {
     fun determineNextScreen(screen: Screen): String {
         // Check for conditions
         val isListScreensEmpty = screen.listScreens.isEmpty()
-        val isListVarEmpty = screen.listVar.isEmpty()
         val hasListIntInPair = pairMedicationTry.value?.first?.isNotEmpty() == true
-        val hasMedicationInPair = pairMedicationTry.value?.second != null
+        val needSlider = pairMedicationTry.value?.second?.run { fg && weight && sex } ?: false
 
         return when {
-            isListScreensEmpty -> if (isListVarEmpty) "Slider" else "CheckBox"
-            hasListIntInPair -> "Slider"
-            hasMedicationInPair -> "Resultat"
+            (hasListIntInPair && needSlider) -> "Slider"
+            hasListIntInPair -> "Resultat1"
+            isListScreensEmpty -> "CheckBox"
             else -> "Try"
         }
     }
@@ -108,11 +111,11 @@ class ScreensViewModel : ViewModel() {
         switches = newSwitches
     }
 
-  // Checkbox
+    // Checkbox
 
-   /**
+    /**
     logic for drugs depends buttons and checkboxes
-    * @param currentScreen The current screen containing various lists.
+     * @param currentScreen The current screen containing various lists.
      * @return The name of the next screen.
      * */
     fun onSubmit(currentScreen: Screen) {
@@ -123,8 +126,8 @@ class ScreensViewModel : ViewModel() {
         }.toMutableList()
         updateVarStringValues(updatedListVar)
         pairMedicationTry.value = controllerLogic.processTryScreen(currentLogic)
-        currentScreen.listVar = updatedListVar
-       _selectedScreen.value = currentScreen
+        currentLogic.listVar = updatedListVar
+        _selectedScreen.value = currentLogic
     }
 
     /**
@@ -138,7 +141,7 @@ class ScreensViewModel : ViewModel() {
         val isCheckedSevera = (isCheckboxChecked((Variables().alergiaSevera.name))?.value) ?: false
 
         listVar.find { it.name == tryAlergiaPenicilina }?.let { variable ->
-            (variable as? VarString)?.valorString =  when {
+            (variable as? VarString)?.valorString = when {
                 isCheckedPenicilina && isCheckedSevera -> "Severa"
                 isCheckedPenicilina -> "Sí"
                 else -> "No"
@@ -146,6 +149,7 @@ class ScreensViewModel : ViewModel() {
         }
         updateVarStringValue(listVar)
     }
+
     /**
      * Updates the value of a VarString variable in the listVar list.
      * @param listVar The list of variables to update.
@@ -160,4 +164,57 @@ class ScreensViewModel : ViewModel() {
         }
     }
 
+    // Slider
+
+    private val fgVar = mutableStateOf(0.0)
+    private val weightVar = mutableStateOf(0.0)
+    private val heightVar = mutableStateOf(0.0)
+    val sexVar = mutableStateOf(Gender.Men)
+
+    fun initializeRangeSlice(sliders: Medication, sexValue: Gender, screen: Screen): List<RangeSlice> {
+        val tempList = mutableListOf<RangeSlice>()  // Lista mutable temporal
+        val haveFg =screen.listVar?.contains(Variables().fg) ?: false
+
+        if (sliders.fg) {
+            var initialFg = if (sexValue == Gender.Men) 90f else 95f
+            initialFg = if (haveFg) 20f else initialFg
+            tempList.add(createRangeSlice(R.string.fg, 0..150, initialFg, R.string.ml_per_min) { newValue -> updateFg(newValue) })
+        }
+
+        if (sliders.weight) {
+            val initialWeight = if (sexValue == Gender.Men) 85f else 65f
+            tempList.add(createRangeSlice(R.string.weight, 0..300, initialWeight, R.string.kg) { newValue -> updateWeight(newValue) })
+        }
+
+        if (sliders.weight) {  // Corregí la condición aquí
+            val initialHeight = if (sexValue == Gender.Men) 175f else 165f
+            tempList.add(createRangeSlice(R.string.height, 0..240, initialHeight, R.string.cm) { newValue -> updateHeight(newValue) })
+        }
+
+        return tempList.toList()  // Convertir la lista mutable a inmutable
+    }
+
+
+    private fun createRangeSlice(@StringRes name: Int, range: IntRange, initialValue: Float, @StringRes unit: Int, callback: (Float) -> Unit): RangeSlice {
+        return RangeSlice(name, range, initialValue, 0, unit, callback)
+    }
+
+
+    private fun updateFg(newValue: Float) {
+        fgVar.value = newValue.toDouble()
+    }
+
+    private fun updateWeight(newValue: Float) {
+        weightVar.value = newValue.toDouble()
+    }
+
+    private fun updateHeight(newValue: Float) {
+        heightVar.value = newValue.toDouble()
+    }
+
+    fun updateGender(gender: Gender) {
+        sexVar.value = gender
+    }
+
 }
+
