@@ -16,6 +16,18 @@ class ScreensViewModel : ViewModel() {
     private val _message = MutableStateFlow(screensGtei.start.message)
     val message = _message.asStateFlow()
 
+    // Immutable Map
+    private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
+
+    // Expose an immutable map to the outside
+    val switchesPublic: Map<String, StateFlow<Boolean>>
+        get() = switches.mapValues { it.value.asStateFlow() }
+
+    // This flow stores a pair of a list of integers and a Medication object.
+    // It's initialized as null, but consider using a default value.
+    private var pairMedicationTry: MutableStateFlow<Pair<List<Int>?, Medication?>?> = MutableStateFlow(null)
+    val medication: Medication? get() = pairMedicationTry.value?.second
+
     fun onScreenSelected(screen: Screen) {
         screen?.listScreens?.forEach { it ->
             if (it.imageResId == 0) {
@@ -34,20 +46,27 @@ class ScreensViewModel : ViewModel() {
             else -> screen?.message ?: ""
         }
     }
-    fun goScreen(screen: Screen): String {
+
+    /**
+     * Determines the next screen to navigate to.
+     * @param screen The current screen containing various lists.
+     * @return The name of the next screen.
+     */
+    fun determineNextScreen(screen: Screen): String {
+        // Check for conditions
+        val isListScreensEmpty = screen.listScreens.isEmpty()
+        val isListVarEmpty = screen.listVar.isEmpty()
+        val hasListIntInPair = pairMedicationTry.value?.first?.isNotEmpty() == true
+        val hasMedicationInPair = pairMedicationTry.value?.second != null
+
         return when {
-            screen.listScreens.isEmpty() -> {
-                if (screen.listVar.isEmpty()) "Slider" else "CheckBox"
-            }
+            isListScreensEmpty -> if (isListVarEmpty) "Slider" else "CheckBox"
+            hasListIntInPair -> "Slider"
+            hasMedicationInPair -> "Resultat"
             else -> "Try"
         }
     }
-    // Immutable Map
-    private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
 
-    // Expose an immutable map to the outside
-    val switchesPublic: Map<String, StateFlow<Boolean>>
-        get() = switches.mapValues { it.value.asStateFlow() }
 
     // Check if a checkbox is checked
     fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean>? =
@@ -60,8 +79,6 @@ class ScreensViewModel : ViewModel() {
         newSwitches[variableName]?.value = !(newSwitches[variableName]?.value ?: false)
         switches = newSwitches
     }
-
-
 
     fun Variables.getAllVarBools(): List<VarBool> {
         return this::class.memberProperties.filter { it.returnType.classifier == VarBool::class }
@@ -101,36 +118,30 @@ class ScreensViewModel : ViewModel() {
 
     // Safe unwrapping in onSubmit function
     fun onSubmit(currentScreen: Screen) {
-//        val updatedListVar = currentScreen.listVar.filter { variable ->
-//            _switches[variable.name]?.value == true && variable.name != alergiaTrySevera.name
-//        }.toMutableList()
-//
-//        updateVarStringValues(updatedListVar)
-//        repositoryTpita?.updateScreen(currentScreen)
-//        pairMedicationTry.value = controllerLogic.processTryScreen(currentScreen)
-//        pairMedicationTry.value?.let {
-//            repositoryTpita?.updateTryResult(it)
-//        }
-//        if (pairMedicationTry.value?.second != null) {
-//            repositoryTpita?.updateDesti("Slider")
-//        } else {
-//            repositoryTpita?.updateDesti("Result")
-//        }
+        val controllerLogic = ControllerLogic()
+        val currentLogic = currentScreen.copy()
+        val updatedListVar = currentLogic.listVar.filter { variable ->
+            switches[variable.name]?.value == true && variable.name != Variables().alergiaSevera.name
+        }.toMutableList()
+        updateVarStringValues(updatedListVar)
+        pairMedicationTry.value = controllerLogic.processTryScreen(currentLogic)
+        currentScreen.listVar = updatedListVar
     }
 
     // --- Private Helper Methods ---
 
     private fun updateVarStringValues(listVar: MutableList<Variable>) {
-//        val isCheckedPenicilina = isCheckboxChecked(tryAlergiaPenicilina.name).value
-//        val isCheckedSevera = isCheckboxChecked(alergiaTrySevera.name).value
-//
-//        val value = when {
-//            isCheckedPenicilina && isCheckedSevera -> "Severa"
-//            isCheckedPenicilina -> "Sí"
-//            else -> "No"
-//        }
-//
-//        updateVarStringValue(listVar, tryAlergiaPenicilina.name, value)
+        val tryAlergiaPenicilina = Variables().alergiaPenicilina.name
+        val isCheckedPenicilina = (isCheckboxChecked(tryAlergiaPenicilina)?.value) ?: false
+        val isCheckedSevera = (isCheckboxChecked((Variables().alergiaSevera.name))?.value) ?: false
+
+        val value = when {
+            isCheckedPenicilina && isCheckedSevera -> "Severa"
+            isCheckedPenicilina -> "Sí"
+            else -> "No"
+        }
+
+        updateVarStringValue(listVar, tryAlergiaPenicilina, value)
     }
 
     private fun updateVarStringValue(listVar: MutableList<Variable>, varName: String, value: String) {

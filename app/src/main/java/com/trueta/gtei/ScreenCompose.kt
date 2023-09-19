@@ -171,7 +171,7 @@ fun TryDisplay(screen: Screen, viewModel: ScreensViewModel) {
 
     val viewModel: ScreensViewModel = viewModel()
 
-    val option = viewModel.goScreen(screen)
+    val option = viewModel.determineNextScreen(screen)
 
     when (option) {
         "Try" -> {
