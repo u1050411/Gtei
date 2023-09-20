@@ -63,7 +63,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.trueta.gtei.ui.theme.GteiTheme
 import kotlin.math.round
 
@@ -150,7 +149,7 @@ fun ScreenStart() {
 @Composable
 fun ScreenTry(viewModel: ScreensViewModel) {
     val selectedScreen by viewModel.selectedScreen.collectAsState()
-    val message by viewModel.message.collectAsState()
+    val message = viewModel.message ?: ""
     Log.d("ScreenTry", "Recomponiendo")
     GteiTheme {
         Column(
@@ -166,7 +165,7 @@ fun ScreenTry(viewModel: ScreensViewModel) {
                     .weight(.095f),
                 contentAlignment = Alignment.BottomCenter,
             ) {
-                MessageDisplay(message)
+                MessageDisplay(viewModel)
             }
             Box(
                 modifier = Modifier
@@ -211,9 +210,9 @@ fun TryDisplay(screen: Screen, viewModel: ScreensViewModel) {
         "Slider" -> {
             SliderDisplay(screen = screen, viewModel = viewModel)
         }
-//        "Resultat1" -> {
-//            ResultDisplay(screen = screen, viewModel = viewModel)
-//        }
+        "Resultat1" -> {
+            ScreenResult(screen = screen, viewModel = viewModel)
+        }
 
     }
 
@@ -222,7 +221,8 @@ fun TryDisplay(screen: Screen, viewModel: ScreensViewModel) {
 
 
 @Composable
-fun MessageDisplay(message: String) {
+fun MessageDisplay(viewModel: ScreensViewModel) {
+    val message = viewModel.message ?: ""
     Text(
         text = message,
         fontSize = 20.sp,
@@ -592,7 +592,8 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
                             keyboardType = KeyboardType.Number
                         ),
                         textStyle = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.secondary),
-                        modifier = Modifier.focusRequester(focusRequester)
+                        modifier = Modifier
+                            .focusRequester(focusRequester)
                             .width(130.dp)
                     )
                 }
@@ -671,8 +672,9 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
     }
 }
 @Composable
-fun ScreenResult(medicamentList: List<Pair<String, String>>, viewModel: ScreensViewModel) {
+fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
 
+    val medicamentList = viewModel.resultPair
     val sizeText = viewModel.sizeText(medicamentList)
     val sizeTextDrugsLogic = sizeText.first // Size of the text for the drugs
     val sizeTextDoseLogic = sizeText.second // Size of the text for the dose

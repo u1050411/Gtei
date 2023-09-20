@@ -1,7 +1,6 @@
 package com.trueta.gtei
 
 import androidx.annotation.StringRes
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +15,8 @@ class ScreensViewModel : ViewModel() {
     private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.start)
     val selectedScreen = _selectedScreen.asStateFlow()
 
-    private val _message = MutableStateFlow(screensGtei.start.message)
-    val message = _message.asStateFlow()
+    private var _message = screensGtei.start.message
+    val message get () = retrieveMessage(selectedScreen.value, determineNextScreen(selectedScreen.value!!))
 
     // Immutable Map
     private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
@@ -28,9 +27,8 @@ class ScreensViewModel : ViewModel() {
 
     // This flow stores a pair of a list of integers and a Medication object.
     // It's initialized as null, but consider using a default value.
-    private var pairMedicationTry: MutableStateFlow<Pair<List<Int>?, Medication?>?> =
-        MutableStateFlow(null)
-    val medication: Medication? get() = pairMedicationTry.value?.second
+    private var pairMedicationTry: Pair<List<Int>, Medication?> = Pair(emptyList(), null)
+    val medication: Medication? get() = pairMedicationTry?.second
     private var _resultPair: List<Pair<String, String>> = emptyList()
     val resultPair: List<Pair<String, String>> get() = _resultPair
 
@@ -42,7 +40,7 @@ class ScreensViewModel : ViewModel() {
         }
         _selectedScreen.value = screen
         _selectedScreen.value?.let {
-            _message.value = retrieveMessage(it, "Try")
+            _message = retrieveMessage(it, "Try")
         }
     }
 
@@ -62,8 +60,8 @@ class ScreensViewModel : ViewModel() {
     fun determineNextScreen(screen: Screen): String {
         // Check for conditions
         val isListScreensEmpty = screen.listScreens.isEmpty()
-        val hasListIntInPair = pairMedicationTry.value?.first?.isNotEmpty() == true
-        val needSlider = pairMedicationTry.value?.second?.run { fg && weight && sex } ?: false
+        val hasListIntInPair = pairMedicationTry?.first?.isNotEmpty() == true
+        val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
 
         return when {
             (hasListIntInPair && needSlider) -> "Slider"
@@ -74,14 +72,11 @@ class ScreensViewModel : ViewModel() {
     }
 
     fun resetState() {
-             DisposableEffect(Unit) {
-            onDispose {       _selectedScreen.value = screensGtei.start
-                _message.value = screensGtei.start.message
-                pairMedicationTry.value = null
+                _selectedScreen.value = screensGtei.start
+                _message = screensGtei.start.message
+                pairMedicationTry = Pair(emptyList(), null)
                 switches = mapOf() }
-        }
 
-    }
 
     // Check if a checkbox is checked
     fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean>? =
@@ -138,9 +133,15 @@ class ScreensViewModel : ViewModel() {
             switches[variable.name]?.value == true && variable.name != Variables().alergiaSevera.name
         }.toMutableList()
         updateVarStringValues(updatedListVar)
-        pairMedicationTry.value = controllerLogic.processTryScreen(currentLogic)
         currentLogic.listVar = updatedListVar
-        _selectedScreen.value = currentLogic
+        pairMedicationTry = controllerLogic.processTryScreen(currentLogic)
+        val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
+        if (needSlider) {
+            currentLogic.listVar = updatedListVar
+            _selectedScreen.value = currentLogic
+        } else {
+            onSubmitSlice(currentLogic, pairMedicationTry.first)
+               }
     }
 
     /**
@@ -224,6 +225,25 @@ class ScreensViewModel : ViewModel() {
         sexVar.value = gender
     }
 
+    /**
+     * Updates the value of variable in the listVar list.
+     * @param listVar The list of variables to update.
+     */
+
+    fun onSubmitSlice(currentLogic: Screen, listMedication: List<Int>) {
+        val controllerLogic = ControllerLogic()
+        val fg =  (if (fgVar.value ==0.0) 35 else fgVar.value).toDouble()
+        val weight = (if (weightVar.value ==0.0) 85 else weightVar.value).toDouble()
+        val height = (if (heightVar.value ==0.0) 175 else heightVar.value).toDouble()
+        val sex = (sexVar.value == Gender.Men)
+
+        val sliderData = SliderData(fg, weight, height, sex)
+        _resultPair = controllerLogic.processSliceScreen(currentLogic, listMedication, sliderData) as List<Pair<String, String>>
+        _selectedScreen.value = currentLogic
+
+    }
+
+
     // Result
 
     // Method to determine the text size based on the text length
@@ -252,8 +272,6 @@ class ScreensViewModel : ViewModel() {
             Pair(max, if (max == 20) 30 else 40)
         }
     }
-
-
 
 }
 
