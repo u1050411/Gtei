@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -149,8 +150,16 @@ fun ScreenStart() {
 @Composable
 fun ScreenTry(viewModel: ScreensViewModel) {
     val selectedScreen by viewModel.selectedScreen.collectAsState()
-    val message = viewModel.message ?: ""
-    Log.d("ScreenTry", "Recomponiendo")
+
+    DisposableEffect(Unit) {
+        // Código para ejecutar cuando el composable entra en la composición
+        Log.d("ScreenTry", "Recomponiendo debido a cambio en selectedScreen")
+
+        onDispose {
+            Log.d("ScreenTry", "Composable ha sido destruido")
+        }
+    }
+
     GteiTheme {
         Column(
             modifier = Modifier

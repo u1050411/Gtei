@@ -1,5 +1,6 @@
 package com.trueta.gtei
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,8 +13,12 @@ class ScreensViewModel : ViewModel() {
     // Initialize your Variables and Screens here
     val screensGtei = Screens()
 
-    private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.start)
-    val selectedScreen = _selectedScreen.asStateFlow()
+    val selectedScreen = MutableStateFlow<Screen?>(screensGtei.start)
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ScreensViewModel", "El ViewModel ha sido destruido")
+    }
 
     private var _message = screensGtei.start.message
     val message get () = retrieveMessage(selectedScreen.value, determineNextScreen(selectedScreen.value!!))
@@ -38,8 +43,8 @@ class ScreensViewModel : ViewModel() {
                 it.imageResId = screen.imageResId
             }
         }
-        _selectedScreen.value = screen
-        _selectedScreen.value?.let {
+        selectedScreen.value = screen
+        selectedScreen.value?.let {
             _message = retrieveMessage(it, "Try")
         }
     }
@@ -73,10 +78,10 @@ class ScreensViewModel : ViewModel() {
     }
 
     fun resetState() {
-                _message = screensGtei.start.message
-                pairMedicationTry = Pair(emptyList(), null)
-                switches = mapOf()
-                _selectedScreen.value = screensGtei.start
+        _message = screensGtei.start.message
+        pairMedicationTry = Pair(emptyList(), null)
+        switches = mapOf()
+        selectedScreen.value = screensGtei.start
     }
 
 
@@ -140,7 +145,10 @@ class ScreensViewModel : ViewModel() {
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
         if (needSlider) {
             currentLogic.listVar = updatedListVar
-            _selectedScreen.value = currentLogic
+
+            selectedScreen.value?.let {
+                _message = retrieveMessage(it, "Slider")
+            }
         } else {
             onSubmitSlice(currentLogic, pairMedicationTry.first)
                }
@@ -241,7 +249,7 @@ class ScreensViewModel : ViewModel() {
 
         val sliderData = SliderData(fg, weight, height, sex)
         _resultPair = controllerLogic.processSliceScreen(currentLogic, listMedication, sliderData) as List<Pair<String, String>>
-        _selectedScreen.value = currentLogic
+        selectedScreen.value = currentLogic
 
     }
 
