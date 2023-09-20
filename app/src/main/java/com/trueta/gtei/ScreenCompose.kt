@@ -485,7 +485,7 @@ fun GenderSelector(viewModel: ScreensViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .padding(top = 16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Text(
             text = "Selecciona el Gènere del Pacient",

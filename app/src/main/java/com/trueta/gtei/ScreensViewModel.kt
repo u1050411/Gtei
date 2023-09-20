@@ -64,18 +64,20 @@ class ScreensViewModel : ViewModel() {
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
 
         return when {
+            (resultPair.isNotEmpty() && resultPair.size > 1) -> "Resultat2"
+            (resultPair.isNotEmpty() && resultPair.size == 1) -> "Resultat1"
             (hasListIntInPair && needSlider) -> "Slider"
-            hasListIntInPair -> "Resultat1"
             isListScreensEmpty -> "CheckBox"
             else -> "Try"
         }
     }
 
     fun resetState() {
-                _selectedScreen.value = screensGtei.start
                 _message = screensGtei.start.message
                 pairMedicationTry = Pair(emptyList(), null)
-                switches = mapOf() }
+                switches = mapOf()
+                _selectedScreen.value = screensGtei.start
+    }
 
 
     // Check if a checkbox is checked
