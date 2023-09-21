@@ -2,6 +2,7 @@ package com.trueta.gtei
 
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,17 +12,22 @@ import kotlin.reflect.full.memberProperties
 
 class ScreensViewModel : ViewModel() {
     // Initialize your Variables and Screens here
-    val screensGtei = Screens()
+    val screensGtei = Screens().copy()
 
-    val selectedScreen = MutableStateFlow<Screen?>(screensGtei.start)
+    private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.start.copy())
+    internal val selectedScreen = _selectedScreen.asStateFlow()
 
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("ScreensViewModel", "El ViewModel ha sido destruido")
+    private val _nextScreen = MutableStateFlow<String>("Try")
+    internal val nextScreen = _nextScreen.asStateFlow()
+    fun updateSelectedScreen(screen: Screen) {
+        _selectedScreen.value = screen
+        _nextScreen.value = determineNextScreen(screen)
+        _message.value = retrieveMessage(screen)
     }
 
-    private var _message = screensGtei.start.message
-    val message get () = retrieveMessage(selectedScreen.value, determineNextScreen(selectedScreen.value!!))
+    private val _message = MutableStateFlow(screensGtei.start.message)
+    val message = _message.asStateFlow()
+
 
     // Immutable Map
     private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
@@ -33,7 +39,7 @@ class ScreensViewModel : ViewModel() {
     // This flow stores a pair of a list of integers and a Medication object.
     // It's initialized as null, but consider using a default value.
     private var pairMedicationTry: Pair<List<Int>, Medication?> = Pair(emptyList(), null)
-    val medication: Medication? get() = pairMedicationTry?.second
+    internal val medication: Medication? get() = pairMedicationTry?.second
     private var _resultPair: List<Pair<String, String>> = emptyList()
     val resultPair: List<Pair<String, String>> get() = _resultPair
 
@@ -43,19 +49,33 @@ class ScreensViewModel : ViewModel() {
                 it.imageResId = screen.imageResId
             }
         }
-        selectedScreen.value = screen
-        selectedScreen.value?.let {
-            _message = retrieveMessage(it, "Try")
+      updateSelectedScreen(screen)
+    }
+
+    /**
+     * Retrieve the appropriate message based on the size of resultPair and the given screen.
+     *
+     * @param screen The Screen object that may contain a default message.
+     * @return The message to be displayed.
+     */
+    private fun retrieveMessage(screen: Screen?): String {
+        return when (resultPair.size) {
+            1 -> {
+                // If there is only one item in resultPair, use plural form 'Medicaments'
+                "Els Medicaments son : "
+            }
+            in 2..Int.MAX_VALUE -> {
+                // If there is more than one item in resultPair, use singular form 'Medicament'
+                "El Medicament es : "
+            }
+            else -> {
+                // If none of the above conditions are met, use the message from the screen object
+                // or an empty string if the screen object is null
+                screen?.message ?: ""
+            }
         }
     }
 
-    private fun retrieveMessage(screen: Screen?, opcioMessage: String): String {
-        return when (opcioMessage) {
-            "Resultat1" -> "Els Medicaments son : "
-            "Resultat2" -> "El Medicament es : "
-            else -> screen?.message ?: ""
-        }
-    }
 
     /**
      * Determines the next screen to navigate to.
@@ -69,21 +89,12 @@ class ScreensViewModel : ViewModel() {
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
 
         return when {
-            (resultPair.isNotEmpty() && resultPair.size > 1) -> "Resultat2"
-            (resultPair.isNotEmpty() && resultPair.size == 1) -> "Resultat1"
+            (resultPair.isNotEmpty()) -> "Resultat"
             (hasListIntInPair && needSlider) -> "Slider"
             isListScreensEmpty -> "CheckBox"
             else -> "Try"
         }
     }
-
-    fun resetState() {
-        _message = screensGtei.start.message
-        pairMedicationTry = Pair(emptyList(), null)
-        switches = mapOf()
-        selectedScreen.value = screensGtei.start
-    }
-
 
     // Check if a checkbox is checked
     fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean>? =
@@ -102,21 +113,29 @@ class ScreensViewModel : ViewModel() {
             .mapNotNull { it as? VarBool }
     }
 
-    // Initialize switches based on screen selection and available variables
-    fun initializeSwitches(screen: Screen?) {
-        val select = selectedScreen.value ?: return
-        val tryAlergiaPenicilina = Variables().alergiaPenicilina
-        val alergiaTrySevera = Variables().alergiaSevera
+    /**
+     * Initialize the switches map based on the given screen and its associated variables.
+     *
+     * Special handling is done for the variable 'alergiaTrySevera' based on the presence
+     * of 'tryAlergiaPenicilina' in the list of variables for the screen.
+     *
+     * @param screen The Screen object containing the list of variables to be used.
+     */
+// Initialize the variables only once to avoid creating multiple instances
+    private var tryAlergiaPenicilina = Variables().alergiaPenicilina.copy()
+    private var alergiaTrySevera = Variables().alergiaSevera.copy()
 
+    fun initializeSwitches(screen: Screen?) {
+        // Mutable map to store the new switches
         val newSwitches = mutableMapOf<String, MutableStateFlow<Boolean>>()
 
         // Special handling for alergiaTrySevera
-        select.listVar.firstOrNull { it.name == tryAlergiaPenicilina.name }?.let {
+        if (screen?.listVar?.any { it.name == tryAlergiaPenicilina.name } == true) {
             newSwitches[alergiaTrySevera.name] = MutableStateFlow(false)
         }
 
         // Initialize switches for other variables
-        for (variable in select.listVar) {
+        screen?.listVar?.forEach { variable ->
             if (variable is VarBool || variable.name == tryAlergiaPenicilina.name) {
                 newSwitches[variable.name] = MutableStateFlow(false)
             }
@@ -125,6 +144,7 @@ class ScreensViewModel : ViewModel() {
         // Replace the existing switches with the new ones
         switches = newSwitches
     }
+
 
     // Checkbox
 
@@ -135,22 +155,18 @@ class ScreensViewModel : ViewModel() {
      * */
     fun onSubmit(currentScreen: Screen) {
         val controllerLogic = ControllerLogic()
-        val currentLogic = currentScreen.copy()
-        val updatedListVar = currentLogic.listVar.filter { variable ->
+        val updatedListVar = currentScreen.listVar.filter { variable ->
             switches[variable.name]?.value == true && variable.name != Variables().alergiaSevera.name
         }.toMutableList()
         updateVarStringValues(updatedListVar)
-        currentLogic.listVar = updatedListVar
-        pairMedicationTry = controllerLogic.processTryScreen(currentLogic)
+        currentScreen.listVar = updatedListVar
+        pairMedicationTry = controllerLogic.processTryScreen(currentScreen)
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
         if (needSlider) {
-            currentLogic.listVar = updatedListVar
-
-            selectedScreen.value?.let {
-                _message = retrieveMessage(it, "Slider")
-            }
+            currentScreen.listVar = updatedListVar
+            updateSelectedScreen(currentScreen)
         } else {
-            onSubmitSlice(currentLogic, pairMedicationTry.first)
+            onSubmitSlice(currentScreen)
                }
     }
 
@@ -190,10 +206,10 @@ class ScreensViewModel : ViewModel() {
 
     // Slider
 
-    private val fgVar = mutableStateOf(0.0)
-    private val weightVar = mutableStateOf(0.0)
-    private val heightVar = mutableStateOf(0.0)
-    val sexVar = mutableStateOf(Gender.Men)
+    private var fgVar = mutableStateOf(0.0)
+    private var weightVar = mutableStateOf(0.0)
+    private var heightVar = mutableStateOf(0.0)
+    var sexVar = mutableStateOf(Gender.Men)
 
     fun initializeRangeSlice(sliders: Medication, isMen: Boolean, haveFg: Boolean): List<RangeSlice> {
         val tempList = mutableListOf<RangeSlice>()  // Lista mutable temporal
@@ -240,7 +256,8 @@ class ScreensViewModel : ViewModel() {
      * @param listVar The list of variables to update.
      */
 
-    fun onSubmitSlice(currentLogic: Screen, listMedication: List<Int>) {
+    fun onSubmitSlice(currentLogic: Screen) {
+        val listMedication = pairMedicationTry.first
         val controllerLogic = ControllerLogic()
         val fg =  (if (fgVar.value ==0.0) 35 else fgVar.value).toDouble()
         val weight = (if (weightVar.value ==0.0) 85 else weightVar.value).toDouble()
@@ -249,8 +266,7 @@ class ScreensViewModel : ViewModel() {
 
         val sliderData = SliderData(fg, weight, height, sex)
         _resultPair = controllerLogic.processSliceScreen(currentLogic, listMedication, sliderData) as List<Pair<String, String>>
-        selectedScreen.value = currentLogic
-
+        updateSelectedScreen(currentLogic)
     }
 
 
@@ -283,5 +299,20 @@ class ScreensViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Resets the state of the ViewModel.
+     */
+    fun resetState() {
+        pairMedicationTry = Pair(emptyList(), null)
+        switches = mapOf()
+        _resultPair = emptyList()
+        updateSelectedScreen(screensGtei.start.copy())
+        tryAlergiaPenicilina = Variables().alergiaPenicilina.copy()
+        alergiaTrySevera = Variables().alergiaSevera.copy()
+        fgVar = mutableStateOf(0.0)
+        weightVar = mutableStateOf(0.0)
+        heightVar = mutableStateOf(0.0)
+        sexVar = mutableStateOf(Gender.Men)
+    }
 }
 

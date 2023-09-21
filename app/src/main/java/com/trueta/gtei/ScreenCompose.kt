@@ -1,6 +1,7 @@
 package com.trueta.gtei
 
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,6 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -62,94 +64,117 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.trueta.gtei.ui.theme.GteiTheme
 import kotlin.math.round
 
+/**
+ * ScreensGtei Composable: This function observes showScreenTry and viewModel.
+ * Depending on the value of showScreenTry, it displays different Composables.
+ *
+ * @param showScreenTry The MutableState that controls the visibility of ScreensGtei.
+ * @param viewModel The ViewModel that contains the StateFlow for selectedScreen and nextScreen.
+ */
 @Composable
 fun ScreensGtei(showScreenTry: MutableState<Boolean>, viewModel: ScreensViewModel) {
-   if (showScreenTry.value) {
-       ScreenTry(viewModel)
+    if (showScreenTry.value) {
+        ScreenTry(viewModel)
     } else {
-       ScreenStart()
+        ScreenStart()
     }
 }
 
+@Preview
 @Composable
 fun ScreenStart() {
     val padding = 32.dp
-    GteiTheme {
-        Box(
+    DisposableEffect(Unit) {
+        // Código para ejecutar cuando el composable entra en la composición
+        Log.d("ScreenStart", "Recomponiendo debido a cambio en selectedScreen")
+
+        onDispose {
+            Log.d("ScreenStart", "Composable ha sido destruido")
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary),
+        contentAlignment = Alignment.Center
+    ) {
+        // Primera columna (Textos)
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
+                .fillMaxHeight(0.8f)
+                .padding(top = padding),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top
         ) {
-            // Primera columna (Textos)
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight(0.8f)
-                    .padding(top = padding),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top
-            ) {
-                // Título y subtitulo
-                Text(
-                    text = "GUIA DE TRACTAMENT EMPÍRIC DE LES INFECCIONS",
-                    style = TextStyle(
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    ),
-                    modifier = Modifier.padding(start = padding)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "\nHOSPITAL UNIVERSITARI DE GIRONA DOCTOR JOSEP TRUETA. EQUIP PROA",
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Light,
-                        color = Color.White
-                    ),
-                    modifier = Modifier.padding(start = padding)
-                )
-            }
+            // Título y subtitulo
+            Text(
+                text = "GUIA DE TRACTAMENT EMPÍRIC DE LES INFECCIONS",
+                style = TextStyle(
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                ),
+                modifier = Modifier.padding(start = padding)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "\nHOSPITAL UNIVERSITARI DE GIRONA DOCTOR JOSEP TRUETA. EQUIP PROA",
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Light,
+                    color = Color.White
+                ),
+                modifier = Modifier.padding(start = padding)
+            )
+        }
 
-            // Segunda columna (Imagen en el fondo)
+        // Segunda columna (Imagen en el fondo)
+
+        Column(
+            modifier = Modifier
+                .fillMaxHeight(0.2f)
+                .align(Alignment.BottomCenter) // Esto coloca la columna en la parte inferior
+        ) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxHeight(0.2f)
-                    .align(Alignment.BottomCenter) // Esto coloca la columna en la parte inferior
+                    .fillMaxHeight(0.5f)
+                    .align(Alignment.Start) // Esto coloca la columna en la parte inferior
             ) {
-
-                Column(
+                Image(
+                    painter = painterResource(id = R.drawable.logo_trueta_generalitat),
+                    contentDescription = "Logo Generalitat",
                     modifier = Modifier
-                        .fillMaxHeight(0.5f)
-                        .align(Alignment.Start) // Esto coloca la columna en la parte inferior
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logo_trueta_generalitat),
-                        contentDescription = "Logo Generalitat",
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(start = padding)
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight(0.5f)
-                        .align(Alignment.End) // Esto coloca la columna en la parte inferior
-                ) {}
+                        .fillMaxHeight()
+                        .padding(start = padding)
+                )
             }
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight(0.5f)
+                    .align(Alignment.End) // Esto coloca la columna en la parte inferior
+            ) {}
         }
     }
 }
 
+
+@Preview
+@Composable
+fun PreviewScreeTry() {
+    val viewModel: ScreensViewModel = viewModel()
+    ScreenTry(viewModel = viewModel)
+}
+
 @Composable
 fun ScreenTry(viewModel: ScreensViewModel) {
-    val selectedScreen by viewModel.selectedScreen.collectAsState()
 
     DisposableEffect(Unit) {
         // Código para ejecutar cuando el composable entra en la composición
@@ -159,79 +184,88 @@ fun ScreenTry(viewModel: ScreensViewModel) {
             Log.d("ScreenTry", "Composable ha sido destruido")
         }
     }
-
-    GteiTheme {
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Bottom
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(5.dp)
+                .weight(.095f),
+            contentAlignment = Alignment.BottomCenter,
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(5.dp)
-                    .weight(.095f),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                MessageDisplay(viewModel)
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .weight(.005f),
-                contentAlignment = Alignment.BottomCenter,
-            ) {}
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(.9f)
-                    .background(Color.White)
-                    .padding(
-                        start = 5.dp,
-                        end = 5.dp,
-                        top = 1.dp,
-                        bottom = 5.dp
-                    ), // padding right and left, top and bottom
-                contentAlignment = Alignment.TopCenter
-            ) {
-                selectedScreen?.let {
-                    TryDisplay(it, viewModel)  // Pass viewModel as an argument
-                }
-            }
+            MessageDisplay(viewModel)
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .weight(.005f),
+            contentAlignment = Alignment.BottomCenter,
+        ) {}
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(.9f)
+                .background(Color.White)
+                .padding(
+                    start = 5.dp,
+                    end = 5.dp,
+                    top = 1.dp,
+                    bottom = 5.dp
+                ), // padding right and left, top and bottom
+            contentAlignment = Alignment.TopCenter
+        ) {
+            TryDisplay(viewModel)  // Pass viewModel as an argument
         }
     }
 }
 
+/**
+ * TryDisplay Composable: This function observes selectedScreen and nextScreen from the ViewModel.
+ * Depending on the value of nextScreen, it displays different Composables.
+ *
+ * @param viewModel The ViewModel that contains the StateFlow for selectedScreen and nextScreen.
+ */
 @Composable
-fun TryDisplay(screen: Screen, viewModel: ScreensViewModel) {
+fun TryDisplay(viewModel: ScreensViewModel) {
+    // Observing StateFlow from ViewModel
+    val selectedScreen by viewModel.selectedScreen.collectAsState()
+    val nextScreen by viewModel.nextScreen.collectAsState()
 
-    val option = viewModel.determineNextScreen(screen)
-
-    when (option) {
+    // Display Composables based on the value of nextScreen
+    when (nextScreen) {
         "Try" -> {
-            ButtonDisplay(screen.listScreens, viewModel = viewModel)
+            // Display buttons based on the list of screens
+            selectedScreen?.let { ButtonDisplay(it.listScreens, viewModel = viewModel) }
         }
+
         "CheckBox" -> {
-            CheckboxesDisplay(screen = screen, viewModel = viewModel)
+            // Display checkboxes, but only if selectedScreen is not null
+            selectedScreen?.let { CheckboxesDisplay(screen = it, viewModel = viewModel) }
         }
+
         "Slider" -> {
-            SliderDisplay(screen = screen, viewModel = viewModel)
-        }
-        "Resultat1" -> {
-            ScreenResult(screen = screen, viewModel = viewModel)
+            // Display sliders, but only if selectedScreen is not null
+            selectedScreen?.let { SliderDisplay(screen = it, viewModel = viewModel) }
         }
 
+        "Resultat" -> {
+            // Display results, but only if selectedScreen is not null
+            selectedScreen?.let { ScreenResult(screen = it, viewModel = viewModel) }
+        }
     }
-
 }
-
 
 
 @Composable
 fun MessageDisplay(viewModel: ScreensViewModel) {
-    val message = viewModel.message ?: ""
+    val message by viewModel.message.collectAsState()
+
     Text(
         text = message,
         fontSize = 20.sp,
@@ -255,8 +289,9 @@ fun MessageDisplay(viewModel: ScreensViewModel) {
             .height(1.dp),
     )
 }
+
 @Composable
-fun ButtonDisplay(listScreen: List<Screen>, viewModel: ScreensViewModel){
+fun ButtonDisplay(listScreen: List<Screen>, viewModel: ScreensViewModel) {
     LazyColumn {
         items(listScreen.size) { index ->
             FunctionButton(listScreen[index], viewModel = viewModel)
@@ -309,7 +344,7 @@ fun FunctionButtonContent(screen: Screen?) {
 fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
     viewModel.initializeSwitches(screen)
     val switches = viewModel.switchesPublic
-     val listVariables = screen.listVar
+    val listVariables = screen.listVar
 
 
     Column(
@@ -322,11 +357,16 @@ fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
         ) {
 
             items(listVariables.size) { index ->  // Use the size of listVariables
-                val variable = listVariables[index]  as Variable// Get the item from the list by index
+                val variable =
+                    listVariables[index] as Variable// Get the item from the list by index
                 val nameVariable = variable.name
                 if (switches != null) {
                     if (switches.containsKey(nameVariable)) {
-                        MultiSelectButton(variable = variable, nameVariable = nameVariable, viewModel = viewModel)
+                        MultiSelectButton(
+                            variable = variable,
+                            nameVariable = nameVariable,
+                            viewModel = viewModel
+                        )
                         Spacer(modifier = Modifier.height(5.dp))
                     }
                 }
@@ -345,8 +385,6 @@ fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
 }
 
 
-
-
 @Composable
 fun MultiSelectButton(
     variable: Variable,
@@ -358,7 +396,8 @@ fun MultiSelectButton(
     val alergiaSeveraName = Variables().alergiaSevera.name
     val alergiaPenicilinaName = Variables().alergiaPenicilina.name
 
-    val AlergiaSeveraCheckedFlow = (viewModel.isCheckboxChecked(alergiaSeveraName)?.collectAsState())
+    val AlergiaSeveraCheckedFlow =
+        (viewModel.isCheckboxChecked(alergiaSeveraName)?.collectAsState())
     val CheckedFlow = (viewModel.isCheckboxChecked(nameVariable)?.collectAsState())
 
     val isAlergiaSeveraCheckedFlow = AlergiaSeveraCheckedFlow?.value == true
@@ -375,6 +414,7 @@ fun MultiSelectButton(
             viewModel.toggleCheckboxState(nameVariable)
             "Al·lèrgia Penicil·lina Lleu"
         }
+
         else -> {
             nameVariable
         }
@@ -460,7 +500,11 @@ fun SliderDisplay(screen: Screen, viewModel: ScreensViewModel) {
     val currentSlider = viewModel.medication ?: return
     val currentGender = viewModel.sexVar.value
     val isMen = (currentGender == Gender.Men)
-    val slidersDataRange = viewModel.initializeRangeSlice(currentSlider, isMen, screen.listVar.contains(Variables().fg))
+    val slidersDataRange = viewModel.initializeRangeSlice(
+        currentSlider,
+        isMen,
+        screen.listVar.contains(Variables().fg)
+    )
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -474,11 +518,11 @@ fun SliderDisplay(screen: Screen, viewModel: ScreensViewModel) {
             items(slidersDataRange.size) { index ->
                 val data = slidersDataRange[index]
                 SliderNumeric(data = data, viewModel = viewModel)
-                drawLines(count=2, colorLine = MaterialTheme.colorScheme.primary)
+                drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
             }
         }
         OutlinedButton(
-            onClick = { viewModel.onSubmit(screen) },
+            onClick = { viewModel.onSubmitSlice(screen) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -517,13 +561,13 @@ fun GenderSelector(viewModel: ScreensViewModel) {
             RadioButtonOption("Dona", Gender.Women, viewModel)
         }
     }
-    drawLines(count=2, colorLine=MaterialTheme.colorScheme.primary)
+    drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
 }
 
 
 @Composable
 fun RadioButtonOption(label: String, gender: Gender, viewModel: ScreensViewModel) {
-    val takeGender =(gender == viewModel.sexVar.value)
+    val takeGender = (gender == viewModel.sexVar.value)
     val isSelected = takeGender
 
     Row(
@@ -550,7 +594,7 @@ fun RadioButtonOption(label: String, gender: Gender, viewModel: ScreensViewModel
         } else {
             MaterialTheme.colorScheme.secondary
         }
-        Text(text = label, color =textColor, fontWeight = FontWeight.Bold,)
+        Text(text = label, color = textColor, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -586,7 +630,13 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = name, fontSize= 25.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, )
+                    Text(
+                        text = name,
+                        fontSize = 25.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             },
             text = {
@@ -600,7 +650,12 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
-                        textStyle = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.secondary),
+                        textStyle = TextStyle(
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.secondary
+                        ),
                         modifier = Modifier
                             .focusRequester(focusRequester)
                             .width(130.dp)
@@ -625,7 +680,7 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false  }) {
+                TextButton(onClick = { showDialog = false }) {
                     Text("Cancelar")
                 }
             }
@@ -680,6 +735,7 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
         )
     }
 }
+
 @Composable
 fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
 
@@ -709,12 +765,13 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
         ) {
 
             for (entry in medicamentList) {
-                drawLines(count=2, colorLine = MaterialTheme.colorScheme.primary)
+                drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally),
+                        .align(Alignment.CenterHorizontally)
+                        .padding(start = 5.dp, end = 5.dp) , // Add padding to the left and right
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -749,7 +806,7 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            drawLines(count=2, colorLine = MaterialTheme.colorScheme.primary)
+            drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
             Button(
                 onClick = {
                     viewModel.resetState()
