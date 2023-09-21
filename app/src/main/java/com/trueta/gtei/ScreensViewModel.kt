@@ -98,10 +98,41 @@ class ScreensViewModel : ViewModel() {
             (resultPair.isNotEmpty()) -> "Resultat"
             (hasListIntInPair && needSlider) -> "Slider"
             isListScreensEmpty && isListVarEmpty -> "OnSubmit"
-            isListScreensEmpty -> "CheckBox"
+            isCheckBoxScreen(screen) -> "CheckBox"
             else -> "Try"
         }
     }
+
+    /**
+     * Determines if a given screen should be treated as a "Checkbox Screen."
+     *
+     * A "Checkbox Screen" is defined as a screen that meets one of the following criteria:
+     * 1. It has no sub-screens and contains at least one variable of type VarBool.
+     * 2. It has no sub-screens, contains variables of types other than VarBool, and includes a variable named "alergiaPenicilina".
+     *
+     * @param screen The screen object to be checked.
+     * @return Boolean value indicating if the screen is a "Checkbox Screen."
+     */
+    fun isCheckBoxScreen(screen: Screen): Boolean {
+        // Check if the screen has no sub-screens and at least one variable
+        if (screen.listScreens.isEmpty() && screen.listVar.isNotEmpty()) {
+            // Check if there's any variable of type VarString with the name "alergiaPenicilina"
+            val haveApendicitis = screen.listVar.any { it.name == Variables().alergiaPenicilina.name }
+
+            // If all variables are of a type different from VarBool and there's a variable named "alergiaPenicilina"
+            if (screen.listVar.all { it !is VarBool } && haveApendicitis) {
+                return true
+            }
+
+            // If there's at least one variable of type VarBool
+            if (screen.listVar.any { it is VarBool }) {
+                return true
+            }
+        }
+
+        return false
+    }
+
 
     // Check if a checkbox is checked
     fun isCheckboxChecked(nameVariable: String): StateFlow<Boolean>? =
