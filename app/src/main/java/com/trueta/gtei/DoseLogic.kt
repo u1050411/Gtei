@@ -9,15 +9,19 @@ class DoseLogic(
         (this[name] as? VarString)?.valorString ?: ""
 
     private val data = sliderData
-    private val variables = originalData.listVar.filterIsInstance<VarBool>().associateBy { it.name }
-    private val focus = originalData.name
     private val drug = medication
+
+    private var focus = originalData.focus
+    private val variables = Variables()
+    private val dades = originalData.listVar.filterIsInstance<Variable>().associateBy { it.name }
+
+
     private val fg = data.fg
     private val height = data.height
     private val isFemale = data.sex == false
-    private val cellType = variables.getStringValue("tipusCelulitis")
-    private val suspectedPneumonia = variables.getStringValue("sospitaPneumonia") == "true"
-    private val septicShock = variables.getStringValue("Xoc Sèptic") == "true"
+    private val cellType = dades.getVariableString(variables.tipusCelulitis.name)
+    private val suspectedPneumonia = dades.getVariableValue(variables.sospitaPneumonia.name)
+    private val septicShock = dades.getVariableValue(variables.xocSeptic.name)
     private val abm = data.weight // Actual Body Mass
     internal val bmi = (abm / (height * height)) > 30 // Body Mass Index
     internal val ibw = // Ideal Body Weight
@@ -308,7 +312,7 @@ class DoseLogic(
 
 
     internal fun fosfomycinDosage(): String {
-        val UTIsPregname = focus.contains("tipusInfeccionsUrinariesGestants", ignoreCase = true)
+        val UTIsPregname =  dades.getVariableString(variables.tipusInfeccionsUrinariesGestants.name) =="INFECCIONS URINÀRIES EN GESTANTS"
         val cistitisComplicada = focus.contains("CISTITIS COMPLICADA", ignoreCase = true)
 
         return when {
@@ -343,7 +347,7 @@ class DoseLogic(
 
         val dose = when {
             fg in 30.0..200.0 && (respiratory || orquiditis) -> "500 mg cada "
-            fg in 0.0..29.0 && (respiratory || orquiditis) -> "dosi inicial 500 mg \nseguit de 250 mg cada"
+            fg in 0.0..29.0 && (respiratory || orquiditis) -> "dosi inicial 500 mg seguit de 250 mg cada"
             else -> withoutData
         }
 
@@ -423,6 +427,7 @@ class DoseLogic(
             else -> return withoutData
         }
         val dose = "Dosis manteniment ${dosage(weightType, maxDose, mgPerKg, frequency)}"
+        val onlyDose = "${dosage(weightType, maxDose, mgPerKg, frequency)}"
 
         val comment = when {
             fg in 0.0..14.0 || neurologic -> "i sol·licitar monitoratge concentracions plasmàtiques"
@@ -433,7 +438,7 @@ class DoseLogic(
         return when {
             fg in 0.0..14.0 -> "$initialDose $dose $comment\n"
             fg in 30.0..200.0 && bmi -> "$initialDose $dose $comment\n"
-            else -> "$dose $comment"
+            else -> "$onlyDose $comment"
         }
 
     }

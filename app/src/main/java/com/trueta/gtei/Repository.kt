@@ -113,6 +113,7 @@ data class Screen(
     val message: String = ""
 ) : Serializable
 
+
 fun Map<String, Any>.getVariableValue(nom: String): Boolean =
     (this[nom] as? VarBool)?.valor ?: false
 fun Map<String, Any>.getVariableString(nom: String, default: String = ""): String =

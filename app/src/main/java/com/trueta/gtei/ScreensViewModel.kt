@@ -1,18 +1,23 @@
 package com.trueta.gtei
 
+import android.content.Context
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.WindowManager
 import androidx.annotation.StringRes
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.unit.max
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.math.max
 import kotlin.reflect.full.memberProperties
 
 class ScreensViewModel : ViewModel() {
     // Initialize your Variables and Screens here
-    val screensGtei = Screens().copy()
+    var screensGtei = Screens().copy()
 
     private val _selectedScreen = MutableStateFlow<Screen?>(screensGtei.start.copy())
     internal val selectedScreen = _selectedScreen.asStateFlow()
@@ -85,12 +90,14 @@ class ScreensViewModel : ViewModel() {
     fun determineNextScreen(screen: Screen): String {
         // Check for conditions
         val isListScreensEmpty = screen.listScreens.isEmpty()
+        val isListVarEmpty = screen.listVar.isEmpty()
         val hasListIntInPair = pairMedicationTry?.first?.isNotEmpty() == true
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
 
         return when {
             (resultPair.isNotEmpty()) -> "Resultat"
             (hasListIntInPair && needSlider) -> "Slider"
+            isListScreensEmpty && isListVarEmpty -> "OnSubmit"
             isListScreensEmpty -> "CheckBox"
             else -> "Try"
         }
@@ -155,31 +162,44 @@ class ScreensViewModel : ViewModel() {
      * */
     fun onSubmit(currentScreen: Screen) {
         val controllerLogic = ControllerLogic()
-        val updatedListVar = currentScreen.listVar.filter { variable ->
+        currentScreen.listVar.filter { variable ->
             switches[variable.name]?.value == true && variable.name != Variables().alergiaSevera.name
         }.toMutableList()
-        updateVarStringValues(updatedListVar)
-        currentScreen.listVar = updatedListVar
+        updateVarStringValues(currentScreen)
         pairMedicationTry = controllerLogic.processTryScreen(currentScreen)
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
         if (needSlider) {
-            currentScreen.listVar = updatedListVar
             updateSelectedScreen(currentScreen)
         } else {
             onSubmitSlice(currentScreen)
                }
     }
 
+
     /**
-     * Updates the value of variable in the listVar list.
+     * Helper function to check if a checkbox for a given variable name is checked.
+     *
+     * @param variableName The name of the variable whose checkbox status we want to know.
+     * @return Boolean indicating whether the checkbox is checked or not.
+     */
+    private fun isCheckboxCheckedFor(variableName: String): Boolean {
+        return isCheckboxChecked(variableName)?.value ?: false
+    }
+
+    /**
+     * Updates the 'valorString' field of the variable with name 'alergiaPenicilina' in the given list.
+     *
      * @param listVar The list of variables to update.
      */
-
-    private fun updateVarStringValues(listVar: MutableList<Variable>) {
+    private fun updateAlergiaPenicilina(listVar: MutableList<Variable>) {
+        // Get the name of the 'alergiaPenicilina' variable
         val tryAlergiaPenicilina = Variables().alergiaPenicilina.name
-        val isCheckedPenicilina = (isCheckboxChecked(tryAlergiaPenicilina)?.value) ?: false
-        val isCheckedSevera = (isCheckboxChecked((Variables().alergiaSevera.name))?.value) ?: false
 
+        // Check if the checkboxes for 'alergiaPenicilina' and 'alergiaSevera' are checked
+        val isCheckedPenicilina = isCheckboxCheckedFor(tryAlergiaPenicilina)
+        val isCheckedSevera = isCheckboxCheckedFor(Variables().alergiaSevera.name)
+
+        // Find the variable in the list and update its 'valorString'
         listVar.find { it.name == tryAlergiaPenicilina }?.let { variable ->
             (variable as? VarString)?.valorString = when {
                 isCheckedPenicilina && isCheckedSevera -> "Severa"
@@ -187,8 +207,21 @@ class ScreensViewModel : ViewModel() {
                 else -> "No"
             }
         }
-        updateVarStringValue(listVar)
     }
+
+    /**
+     * Updates the 'valorString' field of variables in the given Screen object.
+     *
+     * @param screenList The Screen object containing a list of variables to update.
+     */
+    private fun updateVarStringValues(screenList: Screen) {
+        // Update the value of AlergiaPenicilina
+        updateAlergiaPenicilina(screenList.listVar)
+
+        // Update other VarString values if needed
+        updateVarStringValue(screenList.listVar)
+    }
+
 
     /**
      * Updates the value of a VarString variable in the listVar list.
@@ -282,20 +315,72 @@ class ScreensViewModel : ViewModel() {
     }
 
     // Method to determine the text size for medicine and dose
-    fun sizeText(resultsPair: List<Pair<String, String>>): Pair<Int, Int> {
+    /**
+     * Get the screen size of the device in inches.
+     *
+     * @param context Application context.
+     * @return Screen size in inches.
+     */
+    fun getScreenSizeInInches(context: Context): Int {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+
+        val widthInches = displayMetrics.widthPixels / displayMetrics.xdpi
+        val heightInches = displayMetrics.heightPixels / displayMetrics.ydpi
+
+        return Math.sqrt((widthInches * widthInches + heightInches * heightInches).toDouble()).toInt()
+    }
+
+    /**
+     * Adapt text sizes based on device size.
+     *
+     * @param context Application context.
+     * @param resultsPair List of text pairs.
+     * @return A pair containing the adapted text sizes for the first and second elements.
+     */
+    fun sizeText(context: Context, resultsPair: List<Pair<String, String>>): Pair<Int, Int> {
+        val screenSize = getScreenSizeInInches(context)
+
         // Finding maximum lengths for first and second elements in pairs
-        val maxFirst = resultsPair.map { it.first.length }.maxOrNull() ?: 0
-        val maxSecond = resultsPair.map { it.second.length }.maxOrNull() ?: 0
+        var maxFirst = 0
+        var maxSecond = 0
+        for (pair in resultsPair) {
+            max(maxFirst, pair.first.length).also { maxFirst = it }
+            maxSecond = max(maxSecond, pair.second.length)
+        }
 
         // Determine sizes based on maximum lengths
-        val max = determineTextSize(maxFirst)
-        val min = determineTextSize(maxSecond)
+        val max = determineTextSize(maxFirst, screenSize)
+        val min = determineTextSize(maxSecond, screenSize)
 
         // Adjust max and min if needed
         return if (max > min) {
-            Pair(if (min == 20) 30 else 40, min)
+            Pair(if (min == 20) 30 else 35, min)
         } else {
-            Pair(max, if (max == 20) 30 else 40)
+            Pair(max, if (max == 20) 30 else 35)
+        }
+    }
+
+    /**
+     * Determine text size based on text length and screen size.
+     *
+     * @param length Length of the text.
+     * @param screenSize Size of the device screen in inches.
+     * @return Adapted text size.
+     */
+    fun determineTextSize(length: Int, screenSize: Int): Int {
+        val baseSize = when {
+            length <= 10 -> 35
+            length in 11..20 -> 30
+            else -> 20
+        }
+
+        // Adapt the base size according to the screen size
+        return when {
+            screenSize <= 5 -> (baseSize * 0.8).toInt()
+            screenSize in 6..7 -> baseSize
+            else -> (baseSize * 1.2).toInt()
         }
     }
 
@@ -303,6 +388,7 @@ class ScreensViewModel : ViewModel() {
      * Resets the state of the ViewModel.
      */
     fun resetState() {
+        screensGtei = Screens().copy()
         pairMedicationTry = Pair(emptyList(), null)
         switches = mapOf()
         _resultPair = emptyList()

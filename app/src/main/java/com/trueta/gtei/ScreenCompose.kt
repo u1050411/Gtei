@@ -68,6 +68,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import com.trueta.gtei.ui.theme.GteiTheme
 import kotlin.math.round
 
@@ -257,6 +258,10 @@ fun TryDisplay(viewModel: ScreensViewModel) {
         "Resultat" -> {
             // Display results, but only if selectedScreen is not null
             selectedScreen?.let { ScreenResult(screen = it, viewModel = viewModel) }
+        }
+        "OnSubmit" -> {
+            // Display results, but only if selectedScreen is not null
+            selectedScreen?.let { viewModel.onSubmit(it) }
         }
     }
 }
@@ -740,7 +745,8 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
 fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
 
     val medicamentList = viewModel.resultPair
-    val sizeText = viewModel.sizeText(medicamentList)
+    val context = LocalContext.current // Get the context
+    val sizeText = viewModel.sizeText(context, medicamentList)
     val sizeTextDrugsLogic = sizeText.first // Size of the text for the drugs
     val sizeTextDoseLogic = sizeText.second // Size of the text for the dose
 
@@ -780,7 +786,8 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                             text = entry.first.uppercase(),
                             fontSize = sizeTextDrugsLogic.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.secondary,
+                            textAlign = TextAlign.Center
                         )
                     }
 
@@ -791,7 +798,8 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                             text = entry.second,
                             fontSize = sizeTextDoseLogic.sp,
                             fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
