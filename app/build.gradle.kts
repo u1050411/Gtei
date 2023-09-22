@@ -69,4 +69,6 @@ dependencies {
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.1")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation ("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
+    implementation ("androidx.compose.foundation:foundation-layout:1.5.1")
+    implementation ("androidx.compose.material:material:1.5.1")
 }

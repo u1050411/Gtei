@@ -1,6 +1,7 @@
 package com.trueta.gtei
 
 import android.util.Log
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,8 +27,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
@@ -52,9 +54,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -171,8 +172,6 @@ fun ScreenStart() {
     }
 }
 
-
-
 @Preview
 @Composable
 fun PreviewScreeTry() {
@@ -267,6 +266,12 @@ fun TryDisplay(viewModel: ScreensViewModel) {
     }
 }
 
+@Preview
+@Composable
+fun PreviewMessage() {
+    val viewModel: ScreensViewModel = viewModel()
+    MessageDisplay(viewModel = viewModel)
+}
 
 @Composable
 fun MessageDisplay(viewModel: ScreensViewModel) {
@@ -346,6 +351,14 @@ fun FunctionButtonContent(screen: Screen?) {
     }
 }
 
+@Preview
+@Composable
+fun PreviewCheckboxes() {
+    val viewModel: ScreensViewModel = viewModel()
+    val screen = viewModel.screensGtei.respiratori1
+    CheckboxesDisplay(screen = screen, viewModel = viewModel)
+}
+
 @Composable
 fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
     viewModel.initializeSwitches(screen)
@@ -369,7 +382,6 @@ fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
                 if (switches != null) {
                     if (switches.containsKey(nameVariable)) {
                         MultiSelectButton(
-                            variable = variable,
                             nameVariable = nameVariable,
                             viewModel = viewModel
                         )
@@ -390,15 +402,11 @@ fun CheckboxesDisplay(screen: Screen, viewModel: ScreensViewModel) {
     }
 }
 
-
 @Composable
 fun MultiSelectButton(
-    variable: Variable,
     nameVariable: String,
     viewModel: ScreensViewModel,
-
     ) {
-
     val alergiaSeveraName = Variables().alergiaSevera.name
     val alergiaPenicilinaName = Variables().alergiaPenicilina.name
 
@@ -410,17 +418,14 @@ fun MultiSelectButton(
     val isCheckedFlow = CheckedFlow?.value == true
 
     var label = when {
-
         isAlergiaSeveraCheckedFlow && isCheckedFlow && nameVariable == alergiaPenicilinaName -> {
             "Al·lèrgia Penicil·lina Greu"
         }
-
         isAlergiaSeveraCheckedFlow && nameVariable == alergiaPenicilinaName -> {
             viewModel.toggleCheckboxState(alergiaSeveraName)
             viewModel.toggleCheckboxState(nameVariable)
             "Al·lèrgia Penicil·lina Lleu"
         }
-
         else -> {
             nameVariable
         }
@@ -434,7 +439,6 @@ fun MultiSelectButton(
             onCheckedChange = { viewModel.toggleCheckboxState(nameVariable) }
         )
     }
-
 
     // Additional logic for alergiaSevera
     if (nameVariable == alergiaPenicilinaName && isCheckedFlow && !isAlergiaSeveraCheckedFlow) {
@@ -496,6 +500,14 @@ fun CheckboxOptionRow(
         }
 
     }
+}
+
+@Preview
+@Composable
+fun SliderCheckboxes() {
+    val viewModel: ScreensViewModel = viewModel()
+    val screen = viewModel.screensGtei.respiratori1
+    SliderDisplay(screen = screen, viewModel = viewModel)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -570,7 +582,6 @@ fun GenderSelector(viewModel: ScreensViewModel) {
     drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
 }
 
-
 @Composable
 fun RadioButtonOption(label: String, gender: Gender, viewModel: ScreensViewModel) {
     val takeGender = (gender == viewModel.sexVar.value)
@@ -603,7 +614,6 @@ fun RadioButtonOption(label: String, gender: Gender, viewModel: ScreensViewModel
         Text(text = label, color = textColor, fontWeight = FontWeight.Bold)
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -742,12 +752,24 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
     }
 }
 
+@Preview
+@Composable
+fun SliderResult() {
+    val viewModel: ScreensViewModel = ScreensViewModel()
+    val screen = viewModel.screensGtei.respiratori1
+    ScreenResult(screen = screen, viewModel = viewModel)
+}
 @Composable
 fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
 
     val medicamentList = viewModel.resultPair
     val context = LocalContext.current // Get the context
     val sizeText = viewModel.sizeText(context, medicamentList)
+    var progress by remember { mutableStateOf(0.1f) }
+    val animatedProgress: Float by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
+    )
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -755,12 +777,22 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-
             items(medicamentList.size) { index ->
                 val data = medicamentList[index]
                 MedicamentItem(data = data, sizeText.first, sizeText.second,  viewModel = viewModel)
                 drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
+                LinearProgressIndicator(
+                    progress = animatedProgress,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .visibleIf {
+                            // La línea solo se muestra si el scroll está al final
+                            val state = it.layoutState
+                            state.firstVisibleItemIndex == medicamentList.size - 1
+                        }
             }
+
         }
         OutlinedButton(
             onClick = {  viewModel.resetState() },
@@ -771,10 +803,23 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
             Text("Tornar a l'inici", color = MaterialTheme.colorScheme.primary)
         }
     }
-
 }
 
-
+@Composable
+fun CustomProgressIndicator(
+    isLoading: Boolean,
+    message: String = "Desplaça avall per més dades..."
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Gray)
+    ) {
+        if (isLoading) {
+            Text(message)
+        }
+    }
+}
 @Composable
 fun MedicamentItem(
     data: Pair<String, String>,
@@ -782,9 +827,8 @@ fun MedicamentItem(
     sizeTextDoseLogic: Int,
     viewModel: ScreensViewModel
 ) {
-    // Calculate itemHeightPixels for this specific item based on its text content
-    val itemHeightPixels = viewModel.calculateItemHeight(sizeTextDrugsLogic, sizeTextDoseLogic, data) // Implement this function
-
+//    // Calculate itemHeightPixels for this specific item based on its text content
+//    val itemHeightPixels = viewModel.calculateItemHeight(sizeTextDrugsLogic, sizeTextDoseLogic, data) // Implement this function
 
     Column(
         modifier = Modifier
@@ -844,5 +888,3 @@ fun drawLines(count: Int, colorLine: Color = MaterialTheme.colorScheme.primary) 
         }
     }
 }
-
-

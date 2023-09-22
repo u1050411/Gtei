@@ -75,11 +75,11 @@ class ScreensViewModel : ViewModel() {
         return when (resultPair.size) {
             1 -> {
                 // If there is only one item in resultPair, use plural form 'Medicaments'
-                "Els Medicaments son : "
+                "El Medicament es : "
             }
             in 2..Int.MAX_VALUE -> {
                 // If there is more than one item in resultPair, use singular form 'Medicament'
-                "El Medicament es : "
+                "Els "+resultPair.size+" Medicaments son : "
             }
             else -> {
                 // If none of the above conditions are met, use the message from the screen object
@@ -329,29 +329,31 @@ class ScreensViewModel : ViewModel() {
      */
 
     fun onSubmitSlice(currentLogic: Screen) {
-        val listMedication = pairMedicationTry.first
+        // Create a ControllerLogic instance to handle logic processing
         val controllerLogic = ControllerLogic()
-        val fg =  (if (fgVar.value ==0.0) 35 else fgVar.value).toDouble()
-        val weight = (if (weightVar.value ==0.0) 85 else weightVar.value).toDouble()
-        val height = (if (heightVar.value ==0.0) 175 else heightVar.value).toDouble()
+
+        // Safely get the fg, weight, and height values, providing default values if needed
+        val fg = if (fgVar.value.toFloat() == 0.0f) 35.0 else fgVar.value.toDouble()
+        val weight = if (weightVar.value.toFloat() == 0.0f) 85.0 else weightVar.value.toDouble()
+        val height = if (heightVar.value.toFloat() == 0.0f) 175.0 else heightVar.value.toDouble()
+
+        // Determine the gender based on the value of sexVar
         val sex = (sexVar.value == Gender.Men)
 
+        // Prepare the SliderData object with the retrieved values
         val sliderData = SliderData(fg, weight, height, sex)
+
+        // Safely retrieve the medication list, or process it through the current screen
+        val listMedication = pairMedicationTry.first.takeIf { it.isNotEmpty() } ?: controllerLogic.processTryScreen(currentLogic).first
+
+
+        // Process the slice screen and update the result pair
         _resultPair = controllerLogic.processSliceScreen(currentLogic, listMedication, sliderData) as List<Pair<String, String>>
+
+        // Update the selected screen based on the current logic
         updateSelectedScreen(currentLogic)
     }
 
-
-    // Result
-
-    // Method to determine the text size based on the text length
-    private fun determineTextSize(textLength: Int): Int {
-        return when {
-            textLength < 10 -> 40
-            textLength < 20 -> 30
-            else -> 20
-        }
-    }
 
     // Method to determine the text size for medicine and dose
     /**
