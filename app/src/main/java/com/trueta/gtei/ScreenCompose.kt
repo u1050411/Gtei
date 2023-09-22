@@ -781,16 +781,7 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                 val data = medicamentList[index]
                 MedicamentItem(data = data, sizeText.first, sizeText.second,  viewModel = viewModel)
                 drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
-                LinearProgressIndicator(
-                    progress = animatedProgress,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .visibleIf {
-                            // La línea solo se muestra si el scroll está al final
-                            val state = it.layoutState
-                            state.firstVisibleItemIndex == medicamentList.size - 1
-                        }
+
             }
 
         }
