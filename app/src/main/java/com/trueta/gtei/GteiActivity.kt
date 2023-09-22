@@ -32,15 +32,7 @@ class GteiActivity : ComponentActivity() {
             Handler(Looper.getMainLooper()).postDelayed({
                 showScreenTry.value = true
             }, 3000)
-
-            GteiTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    ScreensGtei(showScreenTry, viewModel)
-                }
-            }
+            ScreensGtei(showScreenTry, viewModel)
         }
     }
 }

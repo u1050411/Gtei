@@ -24,17 +24,12 @@ class ScreensViewModel : ViewModel() {
 
     private val _nextScreen = MutableStateFlow<String>("Try")
     internal val nextScreen = _nextScreen.asStateFlow()
-    fun updateSelectedScreen(screen: Screen) {
-        _selectedScreen.value = screen
-        _nextScreen.value = determineNextScreen(screen)
-        _message.value = retrieveMessage(screen)
-    }
 
     private val _message = MutableStateFlow(screensGtei.start.message)
     val message = _message.asStateFlow()
 
 
-    // Immutable Map
+    // Immutable Map switches
     private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
 
     // Expose an immutable map to the outside
@@ -42,12 +37,28 @@ class ScreensViewModel : ViewModel() {
         get() = switches.mapValues { it.value.asStateFlow() }
 
     // This flow stores a pair of a list of integers and a Medication object.
-    // It's initialized as null, but consider using a default value.
+    // It's initialized as null
     private var pairMedicationTry: Pair<List<Int>, Medication?> = Pair(emptyList(), null)
     internal val medication: Medication? get() = pairMedicationTry?.second
     private var _resultPair: List<Pair<String, String>> = emptyList()
     val resultPair: List<Pair<String, String>> get() = _resultPair
 
+    /**
+     * Update the selected screen, next screen, and message.
+     *
+     * @param screen The Screen object to be used for updating.
+     */
+    fun updateSelectedScreen(screen: Screen) {
+        _selectedScreen.value = screen
+        _nextScreen.value = determineNextScreen(screen)
+        _message.value = retrieveMessage(screen)
+    }
+
+    /**
+     * Add imageResId to the listScreens of the given screen if it's not already present.
+     *
+     * @param screen The Screen object to be used for updating.
+     */
     fun onScreenSelected(screen: Screen) {
         screen?.listScreens?.forEach { it ->
             if (it.imageResId == 0) {

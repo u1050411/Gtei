@@ -185,43 +185,38 @@ fun ScreenTry(viewModel: ScreensViewModel) {
             Log.d("ScreenTry", "Composable ha sido destruido")
         }
     }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        Box(
+    GteiTheme {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(5.dp)
-                .weight(.095f),
-            contentAlignment = Alignment.BottomCenter,
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
+            verticalArrangement = Arrangement.Bottom
         ) {
-            MessageDisplay(viewModel)
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
-                .weight(.005f),
-            contentAlignment = Alignment.BottomCenter,
-        ) {}
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(.9f)
-                .background(Color.White)
-                .padding(
-                    start = 5.dp,
-                    end = 5.dp,
-                    top = 1.dp,
-                    bottom = 5.dp
-                ), // padding right and left, top and bottom
-            contentAlignment = Alignment.TopCenter
-        ) {
-            TryDisplay(viewModel)  // Pass viewModel as an argument
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(5.dp)
+                    .weight(.095f),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                MessageDisplay(viewModel)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(.9f)
+                    .background(Color.White)
+                    .padding(
+                        start = 5.dp,
+                        end = 5.dp,
+                        top = 5.dp,
+                        bottom = 5.dp
+                    ), // padding right and left, top and bottom
+                contentAlignment = Alignment.TopCenter
+            ) {
+                TryDisplay(viewModel)  // Pass viewModel as an argument
+            }
         }
     }
 }
