@@ -2,12 +2,9 @@ package com.trueta.gtei
 
 import android.content.Context
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.WindowManager
 import androidx.annotation.StringRes
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.unit.max
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -425,6 +422,32 @@ class ScreensViewModel : ViewModel() {
             else -> (baseSize * 1.2).toInt()
         }
     }
+
+    /**
+     * Calculate the height of an item in the list based on the text size and character count.
+     *
+     * @param sizeTextDrugsLogic Text size for the first element in the pair.
+     * @param sizeTextDoseLogic Text size for the second element in the pair.
+     * @param entry The pair of strings to be used for calculating the height.
+     * @return The height of the item.
+* */
+    fun calculateItemHeight(sizeTextDrugsLogic: Int, sizeTextDoseLogic: Int, entry: Pair<String, String>): Float {
+        val baseHeight = 10f  // Base height in pixels for empty text
+
+        // Factors to convert text size to pixel height (these are hypothetical factors for demonstration)
+        val textToPixelFactorDrugs = 1.2f
+        val textToPixelFactorDose = 1.0f
+
+        // Calculate the height based on the text size and character count for each string
+        val firstTextHeight = entry.first.length * sizeTextDrugsLogic * textToPixelFactorDrugs
+        val secondTextHeight = entry.second.length * sizeTextDoseLogic * textToPixelFactorDose
+
+        // Calculate the total height
+        val totalHeight = baseHeight + firstTextHeight + secondTextHeight
+
+        return totalHeight
+    }
+
 
     /**
      * Resets the state of the ViewModel.

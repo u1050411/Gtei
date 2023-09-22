@@ -1,7 +1,6 @@
 package com.trueta.gtei
 
 import android.util.Log
-import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,7 +24,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,7 +32,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -68,7 +65,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.platform.LocalContext
 import com.trueta.gtei.ui.theme.GteiTheme
 import kotlin.math.round
 
@@ -100,71 +96,81 @@ fun ScreenStart() {
             Log.d("ScreenStart", "Composable ha sido destruido")
         }
     }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
-        contentAlignment = Alignment.Center
-    ) {
-        // Primera columna (Textos)
+    GteiTheme {
         Column(
             modifier = Modifier
-                .fillMaxHeight(0.8f)
-                .padding(top = padding),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
+            verticalArrangement = Arrangement.Bottom
         ) {
-            // Título y subtitulo
-            Text(
-                text = "GUIA DE TRACTAMENT EMPÍRIC DE LES INFECCIONS",
-                style = TextStyle(
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                ),
-                modifier = Modifier.padding(start = padding)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "\nHOSPITAL UNIVERSITARI DE GIRONA DOCTOR JOSEP TRUETA. EQUIP PROA",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Light,
-                    color = Color.White
-                ),
-                modifier = Modifier.padding(start = padding)
-            )
-        }
-
-        // Segunda columna (Imagen en el fondo)
-
-        Column(
-            modifier = Modifier
-                .fillMaxHeight(0.2f)
-                .align(Alignment.BottomCenter) // Esto coloca la columna en la parte inferior
-        ) {
-
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxHeight(0.5f)
-                    .align(Alignment.Start) // Esto coloca la columna en la parte inferior
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_trueta_generalitat),
-                    contentDescription = "Logo Generalitat",
+                // Primera columna (Textos)
+                Column(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(start = padding)
-                )
+                        .fillMaxHeight(0.8f)
+                        .padding(top = padding),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    // Título y subtitulo
+                    Text(
+                        text = "GUIA DE TRACTAMENT EMPÍRIC DE LES INFECCIONS",
+                        style = TextStyle(
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        ),
+                        modifier = Modifier.padding(start = padding)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "\nHOSPITAL UNIVERSITARI DE GIRONA DOCTOR JOSEP TRUETA. EQUIP PROA",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Light,
+                            color = Color.White
+                        ),
+                        modifier = Modifier.padding(start = padding)
+                    )
+                }
+
+                // Segunda columna (Imagen en el fondo)
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight(0.2f)
+                        .align(Alignment.BottomCenter) // Esto coloca la columna en la parte inferior
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight(0.5f)
+                            .align(Alignment.Start) // Esto coloca la columna en la parte inferior
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_trueta_generalitat),
+                            contentDescription = "Logo Generalitat",
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(start = padding)
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight(0.5f)
+                            .align(Alignment.End) // Esto coloca la columna en la parte inferior
+                    ) {}
+                }
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight(0.5f)
-                    .align(Alignment.End) // Esto coloca la columna en la parte inferior
-            ) {}
         }
     }
 }
+
 
 
 @Preview
@@ -742,88 +748,75 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
     val medicamentList = viewModel.resultPair
     val context = LocalContext.current // Get the context
     val sizeText = viewModel.sizeText(context, medicamentList)
-    val sizeTextDrugsLogic = sizeText.first // Size of the text for the drugs
-    val sizeTextDoseLogic = sizeText.second // Size of the text for the dose
 
-    val configuration = LocalConfiguration.current
-    val density = LocalDensity.current.density
-    val screenWidthDp = configuration.screenWidthDp // The screen width as dp
-    val columnWidthDp = screenWidthDp * 0.15f // 15% of the screen width
-    val totalColumnWidth = medicamentList.size * columnWidthDp //
-    val totalColumnHeightPixels = totalColumnWidth * density  // Convert dp to pixels
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column(
-            modifier = Modifier
-                .requiredHeight(totalColumnHeightPixels.dp) // Set the height of the all column
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            for (entry in medicamentList) {
-                drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally)
-                        .padding(start = 5.dp, end = 5.dp) , // Add padding to the left and right
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (entry.first.isNotEmpty()) {
-                        Text(
-                            text = entry.first.uppercase(),
-                            fontSize = sizeTextDrugsLogic.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (entry.second.isNotEmpty()) {
-                        Text(
-                            text = entry.second,
-                            fontSize = sizeTextDoseLogic.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-        }
-
-        Column(
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .align(Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
-            Button(
-                onClick = {
-                    viewModel.resetState()
-                }, // Use the reusable function here
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp)
-            ) {
-                Text(text = "Tornar a l'inici")
+
+            items(medicamentList.size) { index ->
+                val data = medicamentList[index]
+                MedicamentItem(data = data, sizeText.first, sizeText.second,  viewModel = viewModel)
+                drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
             }
+        }
+        OutlinedButton(
+            onClick = {  viewModel.resetState() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Tornar a l'inici", color = MaterialTheme.colorScheme.primary)
+        }
+    }
+
+}
+
+
+@Composable
+fun MedicamentItem(
+    data: Pair<String, String>,
+    sizeTextDrugsLogic: Int,
+    sizeTextDoseLogic: Int,
+    viewModel: ScreensViewModel
+) {
+    // Calculate itemHeightPixels for this specific item based on its text content
+    val itemHeightPixels = viewModel.calculateItemHeight(sizeTextDrugsLogic, sizeTextDoseLogic, data) // Implement this function
+
+
+    Column(
+        modifier = Modifier
+//            .requiredHeight(itemHeightPixels.dp) // Set the dynamic height here
+            .fillMaxWidth()
+            .padding(start = 5.dp, end = 5.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (data.first.isNotEmpty()) {
+            Text(
+                text = data.first.uppercase(),
+                fontSize = sizeTextDrugsLogic.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.secondary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (data.second.isNotEmpty()) {
+            Text(
+                text = data.second,
+                fontSize = sizeTextDoseLogic.sp,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
-
 
 /**
  * Draw lines
