@@ -809,7 +809,7 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                 Text("Desplaça Avall per més Dades !", color = MaterialTheme.colorScheme.background)
             }
         }
-
+        drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
         // LazyColumn to display the list of medications
         LazyColumn(
             state = lazyListState,
