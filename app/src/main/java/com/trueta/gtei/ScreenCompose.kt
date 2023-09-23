@@ -68,6 +68,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.trueta.gtei.ui.theme.GteiTheme
 import kotlin.math.round
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 /**
  * ScreensGtei Composable: This function observes showScreenTry and viewModel.
@@ -752,6 +763,8 @@ fun SliderNumeric(data: RangeSlice, viewModel: ScreensViewModel) {
     }
 }
 
+
+
 @Preview
 @Composable
 fun SliderResult() {
@@ -760,57 +773,81 @@ fun SliderResult() {
     ScreenResult(screen = screen, viewModel = viewModel)
 }
 @Composable
+        /**
+         * ScreenResult composable shows the list of medications and provides an option to reset.
+         *
+         * @param screen Screen data (not used in this example).
+         * @param viewModel ViewModel that provides the list of medications and text sizes.
+         */
 fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
+    val context = LocalContext.current // Get the current context
+    val medicamentList = viewModel.resultPair // Fetch the list of medications from the ViewModel
+    val sizeText = viewModel.sizeText(context, medicamentList) // Determine text sizes
 
-    val medicamentList = viewModel.resultPair
-    val context = LocalContext.current // Get the context
-    val sizeText = viewModel.sizeText(context, medicamentList)
-    var progress by remember { mutableStateOf(0.1f) }
-    val animatedProgress: Float by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
-    )
+    val lazyListState = rememberLazyListState() // Remember the scroll state of the LazyColumn
+    val coroutineScope = rememberCoroutineScope() // Coroutine scope for launching coroutines
+    val listSize = medicamentList.size // Size of the list
+    var reachedEnd by remember { mutableStateOf(false) } // State variable to track if the end of the list is reached
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Show a message prompting the user to scroll for more data if not at the end of the list
+        if (!reachedEnd) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .background(MaterialTheme.colorScheme.secondary),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Scroll down for more data!", color = MaterialTheme.colorScheme.background)
+            }
+        }
+
+        // LazyColumn to display the list of medications
         LazyColumn(
+            state = lazyListState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            items(medicamentList.size) { index ->
+            items(listSize) { index ->
                 val data = medicamentList[index]
-                MedicamentItem(data = data, sizeText.first, sizeText.second,  viewModel = viewModel)
+                MedicamentItem(data = data, sizeText.first, sizeText.second, viewModel = viewModel)
                 drawLines(count = 2, colorLine = MaterialTheme.colorScheme.primary)
+            }
+        }
 
+        // Observe changes in the LazyColumn scroll position and update 'reachedEnd' accordingly
+        DisposableEffect(lazyListState) {
+            val flow = snapshotFlow { lazyListState.firstVisibleItemIndex }
+
+            val job = coroutineScope.launch {
+                flow.collect { firstVisibleItemIndex ->
+                    val visibleItems = lazyListState.layoutInfo.visibleItemsInfo.size
+                    reachedEnd = (firstVisibleItemIndex + visibleItems) > (listSize - 1)
+                }
             }
 
+            // Cancel the coroutine job when the composable is disposed
+            onDispose { job.cancel() }
         }
+
+        // Button to reset the ViewModel state
         OutlinedButton(
-            onClick = {  viewModel.resetState() },
+            onClick = { viewModel.resetState() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text("Tornar a l'inici", color = MaterialTheme.colorScheme.primary)
+            Text("Back to start", color = MaterialTheme.colorScheme.primary)
         }
     }
 }
 
-@Composable
-fun CustomProgressIndicator(
-    isLoading: Boolean,
-    message: String = "Desplaça avall per més dades..."
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Gray)
-    ) {
-        if (isLoading) {
-            Text(message)
-        }
-    }
-}
+
+
 @Composable
 fun MedicamentItem(
     data: Pair<String, String>,
@@ -859,12 +896,12 @@ fun MedicamentItem(
  * @param colorLine Color of the line
  */
 @Composable
-fun drawLines(count: Int, colorLine: Color = MaterialTheme.colorScheme.primary, background: Color = MaterialTheme.colorScheme.background) {
+fun drawLines(count: Int, colorLine: Color = MaterialTheme.colorScheme.primary, background: Color = MaterialTheme.colorScheme.background, size: Int = 20) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 2.dp)
-            .height(20.dp)
+            .height(size.dp)
             .background(background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally

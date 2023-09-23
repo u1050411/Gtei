@@ -380,14 +380,16 @@ class DrugsLogic(dadesOriginals: Screen) {
     }
 
     private fun tractamentInfeccioCateter(): List<Int> {
-        val baseList = if (fg) 23 else 19
-        return when (alergiaPenicilinaString) {
-            "Severa" -> listOf(11) + (if (frmr) listOf(16) else emptyList()) + baseList
-            "Sí" -> listOf(12) + baseList
-            "No" -> (if (frmr) listOf(12) else listOf(10)) + baseList
-            else -> listOf(999) // Contactar Servei Informàtic
+//        val baseList = if (fg) 23 else 19
+//        return when (alergiaPenicilinaString) {
+//            "Severa" -> listOf(11) + (if (frmr) listOf(16) else emptyList()) + baseList
+//            "Sí" -> listOf(12) + baseList
+//            "No" -> (if (frmr) listOf(12) else listOf(10)) + baseList
+//            else -> listOf(999) // Contactar Servei Informàtic
+//    }
+        return listOf(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
 
-        }
+
     }
 
     private fun tractamentSepsiaOdc(): List<Int> {
