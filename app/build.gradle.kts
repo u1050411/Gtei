@@ -10,7 +10,6 @@ android {
     defaultConfig {
         applicationId = "com.trueta.gtei"
         minSdk = 30
-        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 

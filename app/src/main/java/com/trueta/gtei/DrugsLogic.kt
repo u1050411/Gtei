@@ -393,7 +393,7 @@ class DrugsLogic(dadesOriginals: Screen) {
     private fun tractamentSepsiaOdc(): List<Int> {
         val baseList = if (xocSeptic) listOf(16, 19) else listOf(16)  // amikacina, vancomicina or vancomicina
         return when (alergiaPenicilinaString) {
-            "Severa" -> listOf(11, 19, 20) + baseList  // aztreonam, vancomicina, metronidazol // amikacina, vancomicina or vancomicina
+            "Severa" -> listOf(11, 20) + baseList  // aztreonam, vancomicina, metronidazol // amikacina, vancomicina or vancomicina
             "Sí", "No" -> listOf(12) + baseList  // meropenem  // amikacina, vancomicina or vancomicina
             else -> listOf(999)  // Contactar Servei Informàtic
         }

@@ -859,12 +859,13 @@ fun MedicamentItem(
  * @param colorLine Color of the line
  */
 @Composable
-fun drawLines(count: Int, colorLine: Color = MaterialTheme.colorScheme.primary) {
+fun drawLines(count: Int, colorLine: Color = MaterialTheme.colorScheme.primary, background: Color = MaterialTheme.colorScheme.background) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 2.dp)
-            .height(20.dp),
+            .height(20.dp)
+            .background(background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
