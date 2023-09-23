@@ -124,24 +124,38 @@ class DrugsLogic(dadesOriginals: Screen) {
             }
 
             "ABDOMINAL ALT RISC" -> {
-                val baseListAbdominal1 = (if(mrsa||xocSeptic) (if (fg) listOf(23) else listOf(19)) else emptyList()) //  daptomicina or vancomicina,
+                val baseListAbdominal1 =
+                    (if (mrsa || xocSeptic) (if (fg) listOf(23) else listOf(19)) else emptyList()) //  daptomicina or vancomicina,
                 when (alergiaPenicilinaString) {
-                            "Severa" -> when {
+                    "Severa" -> when {
                         xocSeptic || blee -> listOf(92)
                         else -> when {
-                            factorRisc -> listOf(11, 20) + (if (xocSeptic) listOf(26) else listOf(22)) + baseListAbdominal1 // aztreonam, metronidazol, fluconazol,  daptomicina or vancomicina,
+                            factorRisc -> listOf(
+                                11,
+                                20
+                            ) + (if (xocSeptic) listOf(26) else listOf(22)) + baseListAbdominal1 // aztreonam, metronidazol, fluconazol,  daptomicina or vancomicina,
                             else -> listOf(17, 19, 20) // ceftriaxona, amikacina, vancomicina
                         }
                     }
 
                     "Sí" -> when {
-                        (xocSeptic || blee) -> listOf(12) + baseListAbdominal1 + (if (factorRisc) listOf(26) else listOf(22)) // meropenem, daptomicina or vancomicina, caspofungina or fluconazol
-                        else -> listOf(11, 20) + baseListAbdominal1 + (if (factorRisc) listOf(26) else listOf(22)) // aztreonam, metronidazol,  daptomicina or vancomicina, caspofungina or fluconazol
+                        (xocSeptic || blee) -> listOf(12) + baseListAbdominal1 + (if (factorRisc) listOf(
+                            26
+                        ) else listOf(22)) // meropenem, daptomicina or vancomicina, caspofungina or fluconazol
+                        else -> listOf(
+                            11,
+                            20
+                        ) + baseListAbdominal1 + (if (factorRisc) listOf(26) else listOf(22)) // aztreonam, metronidazol,  daptomicina or vancomicina, caspofungina or fluconazol
                     }
 
                     else -> when {
-                        (xocSeptic || blee) -> listOf(12) + baseListAbdominal1 + (if (factorRisc) listOf(26) else listOf(22)) // meropenem, daptomicina or vancomicina, caspofungina or fluconazol
-                        else -> listOf(11, 20) + baseListAbdominal1 + (if (factorRisc) listOf(26) else listOf(22)) // aztreonam, metronidazol,  daptomicina or vancomicina, caspofungina or fluconazol
+                        (xocSeptic || blee) -> listOf(12) + baseListAbdominal1 + (if (factorRisc) listOf(
+                            26
+                        ) else listOf(22)) // meropenem, daptomicina or vancomicina, caspofungina or fluconazol
+                        else -> listOf(
+                            11,
+                            20
+                        ) + baseListAbdominal1 + (if (factorRisc) listOf(26) else listOf(22)) // aztreonam, metronidazol,  daptomicina or vancomicina, caspofungina or fluconazol
                     }
                 }
             }
@@ -155,6 +169,7 @@ class DrugsLogic(dadesOriginals: Screen) {
                         "Sí" -> listOf(12)
                         else -> listOf(10, 20)
                     }
+
                     else -> {
                         if (xocSeptic) {
                             when (alergiaPenicilinaString) {
@@ -164,24 +179,39 @@ class DrugsLogic(dadesOriginals: Screen) {
                         } else listOf(999)
                     }
                 }
+
                 focus.contains("COLANGITIS") -> when (tipusColangitis) {
                     "TIPUS I" -> when (alergiaPenicilinaString) {
                         "Severa" -> listOf(16, 17) //
                         "Sí" -> listOf(12)
                         else -> listOf(4)
                     }
+
                     "TIPUS II" -> when (alergiaPenicilinaString) {
-                        "Severa" -> listOf(16, 17) + (if (postCPRE) if (fg) listOf(25) else listOf(19) else emptyList()) // meropenem, amikacina, vancomicina
+                        "Severa" -> listOf(16, 17) + (if (postCPRE) if (fg) listOf(25) else listOf(
+                            19
+                        ) else emptyList()) // meropenem, amikacina, vancomicina
                         "Sí" -> listOf(12, 19)
                         else -> listOf(4, 19)
                     }
-                    "TIPUS III" -> listOf(16) + (if (alergiaPenicilinaString == "Severa") listOf(17) else listOf(12)) + (if (postCPRE) if (fg) listOf(25) else listOf(19) else emptyList())
+
+                    "TIPUS III" -> listOf(16) + (if (alergiaPenicilinaString == "Severa") listOf(17) else listOf(
+                        12
+                    )) + (if (postCPRE) if (fg) listOf(25) else listOf(19) else emptyList())
+
                     else -> {
-                        val baseList2 = if (fg) listOf(25) else listOf(19) // linezolid or vancomicina
+                        val baseList2 =
+                            if (fg) listOf(25) else listOf(19) // linezolid or vancomicina
                         if (xocSeptic) {
                             when (alergiaPenicilinaString) {
-                                "Severa" -> listOf(11, 16) + baseList2 // aztreonam, amikacina, linezolid or vancomicina
-                                else -> listOf(11, 12) + baseList2 // aztreonam, meropenem, linezolid or vancomicina
+                                "Severa" -> listOf(
+                                    11,
+                                    16
+                                ) + baseList2 // aztreonam, amikacina, linezolid or vancomicina
+                                else -> listOf(
+                                    11,
+                                    12
+                                ) + baseList2 // aztreonam, meropenem, linezolid or vancomicina
                             }
                         } else emptyList()
                     }
@@ -223,8 +253,8 @@ class DrugsLogic(dadesOriginals: Screen) {
             "UROLOGIA CISTITIS COMPLICADA" -> listOf(21) // fosfomicina trometamol
 
             "UROLOGIA PIELONEFRITIS COMPLICADA/SÈPSIA" -> when {
-                alergiaPenicilina -> listOf(11) +baseList // aztreonam i amikacina
-                else -> listOf(9)+ baseList // ceftriaxona
+                alergiaPenicilina -> listOf(11) + baseList // aztreonam i amikacina
+                else -> listOf(9) + baseList // ceftriaxona
             }
 
             "UROLOGIA PIELONEFRITIS AGUDA NO COMPLICADA" -> when {
@@ -242,12 +272,15 @@ class DrugsLogic(dadesOriginals: Screen) {
                 else -> {
                     if (infeccioTransmissioSexual) listOf(1, 9) // doxiciclina, ceftriaxona
                     else listOf(24) // cefuroxima o ceftriaxona
-                    }
+                }
             }
 
             "UROLOGIA XOC SÈPTIC" -> when {
-                alergiaPenicilina -> listOf(11) +  (if (frmr) listOf(19) else emptyList()) // aztreonam i vancomicina
-                else -> listOf(12, 16) +  (if (frmr) listOf(19) else emptyList()) // meropenem i amikacina i vancomicina
+                alergiaPenicilina -> listOf(11) + (if (frmr) listOf(19) else emptyList()) // aztreonam i vancomicina
+                else -> listOf(
+                    12,
+                    16
+                ) + (if (frmr) listOf(19) else emptyList()) // meropenem i amikacina i vancomicina
             }
 
             "UROLOGIA INFECCIONS URINÀRIES EN GESTANTS" -> when (tipusInfeccionsUrinariesGestants) {
@@ -322,6 +355,7 @@ class DrugsLogic(dadesOriginals: Screen) {
 
                 else -> listOf(999) // Contactar Servei Informàtic
             }
+
             "NEUROLOGIC ENCEFALITIS I SOSPITA CAUSA HERPÈTICA" -> listOf(27) // Aciclovir
             "NEUROLOGIC MENINGITIS VÍRICA" -> listOf(97) // “Tractament simptomàtic, un cop descartat encefalitis herpètica”
             else -> listOf(999) // Contactar Servei Informàtic
@@ -356,11 +390,18 @@ class DrugsLogic(dadesOriginals: Screen) {
             "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA TARDANA (> 1 ANY)" -> {
                 return when (alergiaPenicilinaString) {
                     "Severa", "Sí" -> listOf(15) + (if (fg) 23 else 19) // gentamicina, daptomicina or vancomicina
-                    "No" -> listOf(1, 2) + (if (fg) 9 else 15) // ampicilina , cloxacilina cefriaxona or gentamicina
+                    "No" -> listOf(
+                        1,
+                        2
+                    ) + (if (fg) 9 else 15) // ampicilina , cloxacilina cefriaxona or gentamicina
                     else -> listOf(999) // Contactar Servei Informàtic
                 }
             }
-            "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA PRECOÇ (< 1 ANY)" -> listOf(28) + (if (fg) listOf(9, 23) else listOf(15, 19)) // rifampicina, daptomicina or gentamicina, vancomicina
+
+            "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA PRECOÇ (< 1 ANY)" -> listOf(28) + (if (fg) listOf(
+                9,
+                23
+            ) else listOf(15, 19)) // rifampicina, daptomicina or gentamicina, vancomicina
             else -> listOf(999) // Contactar Servei Informàtic
         }
     }
@@ -368,34 +409,48 @@ class DrugsLogic(dadesOriginals: Screen) {
     private fun tractamentFebreNeutropenica(): List<Int> {
         val isCvc = cvc in listOf("SOSPITA PELL I PART TOVES")
         return when (alergiaPenicilinaString) {
-            "Severa" -> listOf(11, 19, 20) + (if (frmr || xocSeptic) listOf(16) else emptyList()) // aztreonam, vancomicina, metronidazol, amikacina
-            "Si" -> listOf(12, 16) + (if (isCvc || xocSeptic) listOf(19) else emptyList())// meropenem, amikacina i  vancomicina
+            "Severa" -> listOf(
+                11,
+                19,
+                20
+            ) + (if (frmr || xocSeptic) listOf(16) else emptyList()) // aztreonam, vancomicina, metronidazol, amikacina
+            "Si" -> listOf(
+                12,
+                16
+            ) + (if (isCvc || xocSeptic) listOf(19) else emptyList())// meropenem, amikacina i  vancomicina
             "No" -> when {
-                (isCvc || xocSeptic) && focusAbdominal -> listOf(10, 16, 19, 20) // cefepime, amikacina, vancomicina, metronidazol
+                (isCvc || xocSeptic) && focusAbdominal -> listOf(
+                    10,
+                    16,
+                    19,
+                    20
+                ) // cefepime, amikacina, vancomicina, metronidazol
                 (isCvc || xocSeptic) -> listOf(10, 16, 19) // cefepime, amikacina, vancomicina
                 else -> listOf(10, 16) // cefepime, amikacina
             }
+
             else -> listOf(999) // Contactar Servei Informàtic
         }
     }
 
     private fun tractamentInfeccioCateter(): List<Int> {
-//        val baseList = if (fg) 23 else 19
-//        return when (alergiaPenicilinaString) {
-//            "Severa" -> listOf(11) + (if (frmr) listOf(16) else emptyList()) + baseList
-//            "Sí" -> listOf(12) + baseList
-//            "No" -> (if (frmr) listOf(12) else listOf(10)) + baseList
-//            else -> listOf(999) // Contactar Servei Informàtic
-//    }
-        return listOf(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
-
-
+        val baseList = if (fg) 23 else 19
+        return when (alergiaPenicilinaString) {
+            "Severa" -> listOf(11) + (if (frmr) listOf(16) else emptyList()) + baseList
+            "Sí" -> listOf(12) + baseList
+            "No" -> (if (frmr) listOf(12) else listOf(10)) + baseList
+            else -> listOf(999) // Contactar Servei Informàtic
+        }
     }
 
     private fun tractamentSepsiaOdc(): List<Int> {
-        val baseList = if (xocSeptic) listOf(16, 19) else listOf(16)  // amikacina, vancomicina or vancomicina
+        val baseList =
+            if (xocSeptic) listOf(16, 19) else listOf(16)  // amikacina, vancomicina or vancomicina
         return when (alergiaPenicilinaString) {
-            "Severa" -> listOf(11, 20) + baseList  // aztreonam, vancomicina, metronidazol // amikacina, vancomicina or vancomicina
+            "Severa" -> listOf(
+                11,
+                20
+            ) + baseList  // aztreonam, vancomicina, metronidazol // amikacina, vancomicina or vancomicina
             "Sí", "No" -> listOf(12) + baseList  // meropenem  // amikacina, vancomicina or vancomicina
             else -> listOf(999)  // Contactar Servei Informàtic
         }

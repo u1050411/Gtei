@@ -1,6 +1,7 @@
 package com.trueta.gtei
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -248,6 +249,10 @@ fun TryDisplay(viewModel: ScreensViewModel) {
     // Observing StateFlow from ViewModel
     val selectedScreen by viewModel.selectedScreen.collectAsState()
     val nextScreen by viewModel.nextScreen.collectAsState()
+
+    BackHandler {
+        viewModel.onBackPress()
+    }
 
     // Display Composables based on the value of nextScreen
     when (nextScreen) {
@@ -801,7 +806,7 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                     .background(MaterialTheme.colorScheme.secondary),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Scroll down for more data!", color = MaterialTheme.colorScheme.background)
+                Text("Desplaça Avall per més Dades !", color = MaterialTheme.colorScheme.background)
             }
         }
 
@@ -841,7 +846,7 @@ fun ScreenResult(screen: Screen, viewModel: ScreensViewModel) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text("Back to start", color = MaterialTheme.colorScheme.primary)
+            Text("Tornar a Inici", color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -853,6 +858,7 @@ fun MedicamentItem(
     data: Pair<String, String>,
     sizeTextDrugsLogic: Int,
     sizeTextDoseLogic: Int,
+    sizeText : Int = if(sizeTextDrugsLogic < sizeTextDoseLogic) sizeTextDrugsLogic else sizeTextDoseLogic,
     viewModel: ScreensViewModel
 ) {
 //    // Calculate itemHeightPixels for this specific item based on its text content
@@ -869,10 +875,11 @@ fun MedicamentItem(
         if (data.first.isNotEmpty()) {
             Text(
                 text = data.first.uppercase(),
-                fontSize = sizeTextDrugsLogic.sp,
+                fontSize = sizeText.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                lineHeight = (sizeText * 1.5).sp // Increase line height by 1.5 times
             )
         }
 
@@ -881,10 +888,11 @@ fun MedicamentItem(
         if (data.second.isNotEmpty()) {
             Text(
                 text = data.second,
-                fontSize = sizeTextDoseLogic.sp,
+                fontSize = sizeText.sp,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                lineHeight = (sizeText * 1.5).sp // Increase line height by 1.5 times
             )
         }
     }

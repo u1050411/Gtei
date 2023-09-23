@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Stack
 import kotlin.math.max
 import kotlin.reflect.full.memberProperties
 
@@ -29,6 +30,51 @@ class ScreensViewModel : ViewModel() {
     // Immutable Map switches
     private var switches: Map<String, MutableStateFlow<Boolean>> = mapOf()
 
+    // Stack to store the previous screens
+    private val screenStack = Stack<ViewModelState>()
+
+    // save state of the ViewModel
+    private fun saveState() {
+        screenStack.push(ViewModelState(
+            screensGtei = screensGtei,
+            _nextScreen = nextScreen.value,
+            pairMedicationTry = pairMedicationTry,
+            switches = switches,
+            resultPair = resultPair,
+            currentScreen = selectedScreen.value ?: screensGtei.start.copy(),
+            tryAlergiaPenicilina = tryAlergiaPenicilina,
+            alergiaTrySevera = alergiaTrySevera,
+            fgVar = fgVar.value,
+            weightVar = weightVar.value,
+            heightVar = heightVar.value,
+            sexVar = sexVar.value
+        ))
+    }
+
+    // restore state of the ViewModel
+
+    fun onBackPress() {
+        // Return if the stack is empty
+        if (screenStack.isEmpty()) return
+
+        // Pop the last screen from the stack
+        val lastScreen = screenStack.pop()
+        screensGtei = lastScreen.screensGtei
+        _nextScreen.value = lastScreen._nextScreen
+        pairMedicationTry = lastScreen.pairMedicationTry
+        switches = lastScreen.switches
+        _resultPair = lastScreen.resultPair
+        _selectedScreen.value = lastScreen.currentScreen
+        tryAlergiaPenicilina = lastScreen.tryAlergiaPenicilina
+        alergiaTrySevera = lastScreen.alergiaTrySevera
+        fgVar = mutableStateOf(lastScreen.fgVar)
+        weightVar = mutableStateOf(lastScreen.weightVar)
+        heightVar = mutableStateOf(lastScreen.heightVar)
+        sexVar = mutableStateOf(lastScreen.sexVar)
+    }
+
+
+
     // Expose an immutable map to the outside
     val switchesPublic: Map<String, StateFlow<Boolean>>
         get() = switches.mapValues { it.value.asStateFlow() }
@@ -46,6 +92,7 @@ class ScreensViewModel : ViewModel() {
      * @param screen The Screen object to be used for updating.
      */
     fun updateSelectedScreen(screen: Screen) {
+        saveState()
         _selectedScreen.value = screen
         _nextScreen.value = determineNextScreen(screen)
         _message.value = retrieveMessage(screen)
@@ -467,5 +514,20 @@ class ScreensViewModel : ViewModel() {
         heightVar = mutableStateOf(0.0)
         sexVar = mutableStateOf(Gender.Men)
     }
+
+    data class ViewModelState(
+        val screensGtei: Screens,
+        val _nextScreen: String,
+        val pairMedicationTry: Pair<List<Int>, Medication?>,
+        val switches: Map<String, MutableStateFlow<Boolean>>,
+        val resultPair: List<Pair<String, String>>,
+        val currentScreen: Screen,
+        val tryAlergiaPenicilina: VarString,
+        val alergiaTrySevera: VarBool,
+        val fgVar: Double,
+        val weightVar: Double,
+        val heightVar: Double,
+        val sexVar: Gender
+    )
 }
 
