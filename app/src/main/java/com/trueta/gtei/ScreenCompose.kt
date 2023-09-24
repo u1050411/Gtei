@@ -2,7 +2,6 @@ package com.trueta.gtei
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,10 +27,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
@@ -55,7 +52,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -69,16 +65,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.trueta.gtei.ui.theme.GteiTheme
 import kotlin.math.round
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 /**
@@ -423,8 +413,8 @@ fun MultiSelectButton(
     nameVariable: String,
     viewModel: ScreensViewModel,
     ) {
-    val alergiaSeveraName = Variables().alergiaSevera.name
-    val alergiaPenicilinaName = Variables().alergiaPenicilina.name
+    val alergiaSeveraName = VariablesGtei().alergiaSevera.name
+    val alergiaPenicilinaName = VariablesGtei().alergiaPenicilina.name
 
     val AlergiaSeveraCheckedFlow =
         (viewModel.isCheckboxChecked(alergiaSeveraName)?.collectAsState())
@@ -537,7 +527,7 @@ fun SliderDisplay(screen: Screen, viewModel: ScreensViewModel) {
     val slidersDataRange = viewModel.initializeRangeSlice(
         currentSlider,
         isMen,
-        screen.listVar.contains(Variables().fg)
+        screen.listVar.contains(VariablesGtei().fg)
     )
 
     Column(modifier = Modifier.fillMaxSize()) {

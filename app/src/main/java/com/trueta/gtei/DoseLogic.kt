@@ -12,16 +12,16 @@ class DoseLogic(
     private val drug = medication
 
     private var focus = originalData.focus
-    private val variables = Variables()
+    private val variablesGtei = VariablesGtei()
     private val dades = originalData.listVar.filterIsInstance<Variable>().associateBy { it.name }
 
 
     private val fg = data.fg
     private val height = data.height
     private val isFemale = data.sex == false
-    private val cellType = dades.getVariableString(variables.tipusCelulitis.name)
-    private val suspectedPneumonia = dades.getVariableValue(variables.sospitaPneumonia.name)
-    private val septicShock = dades.getVariableValue(variables.xocSeptic.name)
+    private val cellType = dades.getVariableString(variablesGtei.tipusCelulitis.name)
+    private val suspectedPneumonia = dades.getVariableValue(variablesGtei.sospitaPneumonia.name)
+    private val septicShock = dades.getVariableValue(variablesGtei.xocSeptic.name)
     private val abm = data.weight // Actual Body Mass
     internal val bmi = (abm / (height * height)) > 30 // Body Mass Index
     internal val ibw = // Ideal Body Weight
@@ -312,7 +312,7 @@ class DoseLogic(
 
 
     internal fun fosfomycinDosage(): String {
-        val UTIsPregname =  dades.getVariableString(variables.tipusInfeccionsUrinariesGestants.name) =="INFECCIONS URINÀRIES EN GESTANTS"
+        val UTIsPregname =  dades.getVariableString(variablesGtei.tipusInfeccionsUrinariesGestants.name) =="INFECCIONS URINÀRIES EN GESTANTS"
         val cistitisComplicada = focus.contains("CISTITIS COMPLICADA", ignoreCase = true)
 
         return when {

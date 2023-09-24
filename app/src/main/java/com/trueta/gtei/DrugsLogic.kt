@@ -3,42 +3,42 @@ package com.trueta.gtei
 class DrugsLogic(dadesOriginals: Screen) {
 
     private var focus = dadesOriginals.focus
-    private val variables = Variables()
+    private val variablesGtei = VariablesGtei()
     private val dades = dadesOriginals.listVar.filterIsInstance<Variable>().associateBy { it.name }
-    val factorRisc = dades.getVariableValue(variables.factorRisc.name)
-    private val tipusCelulitis = dades.getVariableString(variables.tipusCelulitis.name)
-    private val tipusColestitis = dades.getVariableString(variables.tipusColestitis.name)
-    private val tipusColangitis = dades.getVariableString(variables.tipusColangitis.name)
+    val factorRisc = dades.getVariableValue(variablesGtei.factorRisc.name)
+    private val tipusCelulitis = dades.getVariableString(variablesGtei.tipusCelulitis.name)
+    private val tipusColestitis = dades.getVariableString(variablesGtei.tipusColestitis.name)
+    private val tipusColangitis = dades.getVariableString(variablesGtei.tipusColangitis.name)
     private val tipusBacteriuriaAsiptomatica =
-        dades.getVariableString(variables.tipusBacteriuriaAsiptomatica.name)
+        dades.getVariableString(variablesGtei.tipusBacteriuriaAsiptomatica.name)
     private val tipusInfeccionsUrinariesGestants =
-        dades.getVariableString(variables.tipusInfeccionsUrinariesGestants.name)
-    private val tipusComorbilitat = dades.getVariableValue(variables.tipusComorbilitat.name)
-    private val tipusMeningitis = dades.getVariableString(variables.tipusMeningitis.name)
-    private val cvc = dades.getVariableString(variables.cvc.name)
-    private val mrsa = dades.getVariableValue(variables.mrsa.name)
+        dades.getVariableString(variablesGtei.tipusInfeccionsUrinariesGestants.name)
+    private val tipusComorbilitat = dades.getVariableValue(variablesGtei.tipusComorbilitat.name)
+    private val tipusMeningitis = dades.getVariableString(variablesGtei.tipusMeningitis.name)
+    private val cvc = dades.getVariableString(variablesGtei.cvc.name)
+    private val mrsa = dades.getVariableValue(variablesGtei.mrsa.name)
     private val alergiaPenicilina =
-        !dades.getVariableString(variables.alergiaPenicilina.name).contains("No")
+        !dades.getVariableString(variablesGtei.alergiaPenicilina.name).contains("No")
     private val alergiaPenicilinaSevera =
-        dades.getVariableString(variables.alergiaPenicilina.name).contains("Severa")
-    private val sospitaPneumonia = dades.getVariableValue(variables.sospitaPneumonia.name)
-    private val xocSeptic = dades.getVariableValue(variables.xocSeptic.name)
-    private val alergiaPenicilinaString = dades.getVariableString(variables.alergiaPenicilina.name)
-    private val blee = dades.getVariableValue(variables.blee.name)
-    private var sarm = dades.getVariableValue(variables.sarm.name)
-    private val sospitaLegionella = dades.getVariableValue(variables.sospitaLegionella.name)
+        dades.getVariableString(variablesGtei.alergiaPenicilina.name).contains("Severa")
+    private val sospitaPneumonia = dades.getVariableValue(variablesGtei.sospitaPneumonia.name)
+    private val xocSeptic = dades.getVariableValue(variablesGtei.xocSeptic.name)
+    private val alergiaPenicilinaString = dades.getVariableString(variablesGtei.alergiaPenicilina.name)
+    private val blee = dades.getVariableValue(variablesGtei.blee.name)
+    private var sarm = dades.getVariableValue(variablesGtei.sarm.name)
+    private val sospitaLegionella = dades.getVariableValue(variablesGtei.sospitaLegionella.name)
     private val infeccioTransmissioSexual =
-        dades.getVariableValue(variables.infeccioTransmissioSexual.name)
-    private val mossegada = dades.getVariableValue(variables.mossegada.name)
-    private val fracasTractament = dades.getVariableValue(variables.fracasTractament.name)
-    private val multiResistent = dades.getVariableValue(variables.multiResistent.name)
-    private val frmr = dades.getVariableValue(variables.multiResistent.name)
-    private val marsa = dades.getVariableValue(variables.marsa.name)
-    private val focusAbdominal = dades.getVariableValue(variables.focusAbdominal.name)
+        dades.getVariableValue(variablesGtei.infeccioTransmissioSexual.name)
+    private val mossegada = dades.getVariableValue(variablesGtei.mossegada.name)
+    private val fracasTractament = dades.getVariableValue(variablesGtei.fracasTractament.name)
+    private val multiResistent = dades.getVariableValue(variablesGtei.multiResistent.name)
+    private val frmr = dades.getVariableValue(variablesGtei.multiResistent.name)
+    private val marsa = dades.getVariableValue(variablesGtei.marsa.name)
+    private val focusAbdominal = dades.getVariableValue(variablesGtei.focusAbdominal.name)
     private val infeccioPiemefritisAguda =
-        dades.getVariableValue(variables.infeccioPiemefritisAguda.name)
-    private val fg = dades.getVariableValue(variables.fg.name)
-    private val postCPRE = dades.getVariableValue(variables.postCpre.name)
+        dades.getVariableValue(variablesGtei.infeccioPiemefritisAguda.name)
+    private val fg = dades.getVariableValue(variablesGtei.fg.name)
+    private val postCPRE = dades.getVariableValue(variablesGtei.postCpre.name)
 
 
     fun tractamentInfeccio(): List<Int> {

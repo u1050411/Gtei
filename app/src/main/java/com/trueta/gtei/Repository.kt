@@ -46,7 +46,7 @@ data class RangeSlice(
 )
 
 
-data class Variables(
+data class VariablesGtei(
     var focus: VarString = VarString("Focus infecció"),
     var xocSeptic: VarBool = VarBool("Xoc Sèptic"),
     var blee: VarBool = VarBool("BLEE"),
@@ -90,14 +90,14 @@ data class Variables(
     var celulitis: VarBool = VarBool("Celulitis"),
 ) : Serializable{
     companion object {
-        fun getAllVarBools(instance: Variables): List<VarBool> {
+        fun getAllVarBools(instance: VariablesGtei): List<VarBool> {
             return instance::class.memberProperties
                 .filter { it.returnType.classifier == VarBool::class }
                 .mapNotNull { it.get(instance as Nothing) as? VarBool }
         }
-        fun getAllVarVariables( ): List<Variables> {
-            val listBol = this.getAllVarBools(Variables())
-            return listBol.map { it as? Variables }.filterNotNull()
+        fun getAllVarVariables( ): List<VariablesGtei> {
+            val listBol = this.getAllVarBools(VariablesGtei())
+            return listBol.map { it as? VariablesGtei }.filterNotNull()
         }
     }
 }
@@ -119,19 +119,19 @@ fun Map<String, Any>.getVariableValue(nom: String): Boolean =
 fun Map<String, Any>.getVariableString(nom: String, default: String = ""): String =
     (this[nom] as? VarString)?.valorString ?: default
 
-data class Screens(val variables: Variables = Variables()) {
+data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
 
     internal val respiratori1: Screen = Screen(
         name = "RESPIRATORI NOSOCOMIAL",
         focus = "RESPIRATORI NOSOCOMIAL",
         listVar = mutableListOf(
-            variables.multiResistent,
-            variables.xocSeptic,
-            variables.blee,
-            variables.alergiaPenicilina,
-            variables.sarm,
-            variables.alergiaSevera,
-            variables.fg
+            variablesGtei.multiResistent,
+            variablesGtei.xocSeptic,
+            variablesGtei.blee,
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.sarm,
+            variablesGtei.alergiaSevera,
+            variablesGtei.fg
         ),
         message = "Nosocomial"
     )
@@ -140,9 +140,9 @@ data class Screens(val variables: Variables = Variables()) {
         name = "RESPIRATORI COMUNITAT",
         focus = "RESPIRATORI COMUNITAT",
         listVar = mutableListOf(
-            variables.sospitaPneumonia,
-            variables.sospitaLegionella,
-            variables.alergiaPenicilina
+            variablesGtei.sospitaPneumonia,
+            variablesGtei.sospitaLegionella,
+            variablesGtei.alergiaPenicilina
         ),
         message = "Comunitat"
     )
@@ -159,12 +159,12 @@ data class Screens(val variables: Variables = Variables()) {
         name = "ABDOMINAL ALT RISC",
         focus = "ABDOMINAL ALT RISC",
         listVar = mutableListOf(
-            variables.alergiaPenicilina,
-            variables.alergiaSevera,
-            variables.xocSeptic,
-            variables.blee,
-            variables.tractamentAntifungic,
-            variables.fg
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.alergiaSevera,
+            variablesGtei.xocSeptic,
+            variablesGtei.blee,
+            variablesGtei.tractamentAntifungic,
+            variablesGtei.fg
         ),
         message = "Abdominal Alt Risc"
     )
@@ -172,17 +172,17 @@ data class Screens(val variables: Variables = Variables()) {
         name = "ABDOMINAL BAIX RISC",
         focus = "ABDOMINAL BAIX RISC",
         listVar = mutableListOf(
-            variables.alergiaSevera,
-            variables.sarm,
-            variables.blee,
-            variables.alergiaPenicilina
+            variablesGtei.alergiaSevera,
+            variablesGtei.sarm,
+            variablesGtei.blee,
+            variablesGtei.alergiaPenicilina
         ),
         message = "Abdominal Baix Risc"
     )
     internal val abdominal3c1c1: Screen = Screen(
         focus = "ABDOMINAL COLECISTITIS",
         name = "GRAU I",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.tipusColestitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.tipusColestitis.copy().apply {
             valorString = "GRAU I"
         }),
         message = "Colestitis Grau I"
@@ -190,7 +190,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c1c2: Screen = Screen(
         focus = "ABDOMINAL COLECISTITIS",
         name = "GRAU II",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.tipusColestitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.tipusColestitis.copy().apply {
             valorString = "GRAU II"
         }),
         message ="Colestitis Grau II"
@@ -198,7 +198,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c1c3: Screen = Screen(
         focus = "ABDOMINAL COLECISTITIS",
         name = "GRAU III",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.tipusColestitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.tipusColestitis.copy().apply {
             valorString = "GRAU III"
         }),
         message = "Colestitis Grau III"
@@ -207,7 +207,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c1c4: Screen = Screen(
         focus = "ABDOMINAL COLECISTITIS",
         name = "GRAU IV",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.tipusColestitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.tipusColestitis.copy().apply {
             valorString = "GRAU IV"
         }),
         message = "Colestitis Grau IV"
@@ -221,7 +221,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c2l1: Screen = Screen(
         name = "TIPUS I",
         focus = "ABDOMINAL COLANGITIS",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.tipusColangitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.tipusColangitis.copy().apply {
             valorString = "TIPUS I"
         }),
         message = "Colangitis Tipus I"
@@ -230,7 +230,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c2l2: Screen = Screen(
         name = "TIPUS II",
         focus = "ABDOMINAL COLANGITIS",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.fg, variables.postCpre, variables.tipusColangitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg, variablesGtei.postCpre, variablesGtei.tipusColangitis.copy().apply {
             valorString = "TIPUS II"
         }),
         message = "Colangitis Tipus II"
@@ -239,7 +239,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c2l3: Screen = Screen(
         name = "TIPUS III",
         focus = "ABDOMINAL COLANGITIS",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.fg, variables.postCpre, variables.tipusColangitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg, variablesGtei.postCpre, variablesGtei.tipusColangitis.copy().apply {
             valorString = "TIPUS III"
         }),
         message = "Colangitis Tipus III"
@@ -247,7 +247,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c2l4: Screen = Screen(
         name = "TIPUS IV",
         focus = "ABDOMINAL COLANGITIS",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.fg, variables.tipusColangitis.copy().apply {
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg, variablesGtei.tipusColangitis.copy().apply {
             valorString = "TIPUS IV"
         }),
         message = "Colangitis Tipus IV"
@@ -261,20 +261,20 @@ data class Screens(val variables: Variables = Variables()) {
     internal val abdominal3c3p1: Screen = Screen(
         name = "PIELEMEFRITIS LLEU",
         focus = "ABDOMINAL PIELEMEFRITIS LLEU",
-        listVar = mutableListOf(variables.celulitis),
+        listVar = mutableListOf(variablesGtei.celulitis),
         message = "Pielemefritis Lleu"
     )
     internal val abdominal3c3p2: Screen = Screen(
         name = "PIELEMEFRITIS MODERADA/GREU",
         focus = "ABDOMINAL PIELEMEFRITIS MODERADA/GREU",
         listVar = mutableListOf(
-            variables.alergiaPenicilina,
-            variables.alergiaSevera,
-            variables.xocSeptic,
-            variables.blee,
-            variables.tractamentAntifungic,
-            variables.fg,
-            variables.infeccioPiemefritisAguda
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.alergiaSevera,
+            variablesGtei.xocSeptic,
+            variablesGtei.blee,
+            variablesGtei.tractamentAntifungic,
+            variablesGtei.fg,
+            variablesGtei.infeccioPiemefritisAguda
         ),
         message = "Pielemefritis Moderada/Greu"
     )
@@ -309,7 +309,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val urologic1b1: Screen = Screen(
         name = "GESTANT",
         focus = "UROLOGIA BACTERIÚRIA ASIMPTOMÀTICA",
-        listVar = mutableListOf(variables.tipusBacteriuriaAsiptomatica.copy().apply {
+        listVar = mutableListOf(variablesGtei.tipusBacteriuriaAsiptomatica.copy().apply {
             valorString = "GESTANT"
         }),
         message = "Gestant"
@@ -317,7 +317,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val urologic1b2: Screen = Screen(
         name = "CIRURGIA PROSTÀTICA",
         focus = "UROLOGIA BACTERIÚRIA ASIMPTOMÀTICA",
-        listVar = mutableListOf(variables.tipusBacteriuriaAsiptomatica.copy().apply {
+        listVar = mutableListOf(variablesGtei.tipusBacteriuriaAsiptomatica.copy().apply {
 
             valorString = "CIRURGIA PROSTÀTICA"
         }),
@@ -326,7 +326,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val urologic1b3: Screen = Screen(
         name = "MANIPULACIÓ UROLÒGICA \nAMB RISC DE SAGNAT",
         focus = "UROLOGIA BACTERIÚRIA ASIMPTOMÀTICA",
-        listVar = mutableListOf(variables.tipusBacteriuriaAsiptomatica.copy().apply {
+        listVar = mutableListOf(variablesGtei.tipusBacteriuriaAsiptomatica.copy().apply {
 
             valorString = "MANIPULACIÓ UROLÒGICA AMB RISC DE SAGNAT"
         }),
@@ -336,7 +336,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val urologic1b4: Screen = Screen(
         name = "ALTRES",
         focus = "UROLOGIA BACTERIÚRIA ASIMPTOMÀTICA",
-        listVar = mutableListOf(variables.tipusBacteriuriaAsiptomatica.copy().apply {
+        listVar = mutableListOf(variablesGtei.tipusBacteriuriaAsiptomatica.copy().apply {
             valorString = "ALTRES"
         }),
         message = "Altres"
@@ -361,20 +361,20 @@ data class Screens(val variables: Variables = Variables()) {
     internal val urologic3: Screen = Screen(
         name = "PIELONEFRITIS COMPLICADA/SÈPSIA",
         focus = "UROLOGIA PIELONEFRITIS COMPLICADA/SÈPSIA",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.frmr),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.frmr),
         message = "Pielemefritis Complicada/Sèpsia"
     )
     internal val urologic4: Screen = Screen(
         name = "PIELONEFRITIS AGUDA NO COMPLICADA",
         focus = "UROLOGIA PIELONEFRITIS AGUDA NO COMPLICADA",
-        listVar = mutableListOf(variables.alergiaPenicilina),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina),
         message = "Pielemefritis Aguda no Complicada"
     )
 
     internal val urologic5: Screen = Screen(
         name = "PROSTATITIS",
         focus = "UROLOGIA PROSTATITIS",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.frmr),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.frmr),
         message = "Prostatitis"
     )
 
@@ -382,8 +382,8 @@ data class Screens(val variables: Variables = Variables()) {
         name = "ORQUITIS I EPIDIMITIS",
         focus = "UROLOGIA ORQUITIS I EPIDIMITIS",
         listVar = mutableListOf(
-            variables.infeccioTransmissioSexual,
-            variables.alergiaPenicilina
+            variablesGtei.infeccioTransmissioSexual,
+            variablesGtei.alergiaPenicilina
         ),
         message = "Orquitis i Epidimitis"
     )
@@ -391,29 +391,29 @@ data class Screens(val variables: Variables = Variables()) {
     internal val urologic7: Screen = Screen(
         name = "XOC SÈPTIC",
         focus = "UROLOGIA XOC SÈPTIC",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.sarm, variables.frmr),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.sarm, variablesGtei.frmr),
         message = "Xoc Sèptic"
     )
 
     internal val urologic8g1: Screen = Screen(
         name = "BACTERIÚRIA ASIMPTOMÀTICA",
         focus = "UROLOGIA INFECCIONS URINÀRIES EN GESTANTS",
-        listVar = mutableListOf(variables.tipusInfeccionsUrinariesGestants.copy().apply { valorString ="BACTERIÚRIA ASIMPTOMÀTICA GESTANT" }),
+        listVar = mutableListOf(variablesGtei.tipusInfeccionsUrinariesGestants.copy().apply { valorString ="BACTERIÚRIA ASIMPTOMÀTICA GESTANT" }),
         message = "Bacteriúria Asimptomàtica"
     )
 
     internal val urologic8g2: Screen = Screen(
         name = "CISTITIS AGUDA",
         focus = "UROLOGIA INFECCIONS URINÀRIES EN GESTANTS",
-        listVar = mutableListOf(variables.tipusInfeccionsUrinariesGestants.copy().apply { valorString ="CISTITIS AGUDA GESTANT" }),
+        listVar = mutableListOf(variablesGtei.tipusInfeccionsUrinariesGestants.copy().apply { valorString ="CISTITIS AGUDA GESTANT" }),
         message = "Cistitis Aguda"
     )
     internal val urologic8g3: Screen = Screen(
         name = "PIELONEFRITIS",
         focus = "UROLOGIA INFECCIONS URINÀRIES EN GESTANTS",
         listVar = mutableListOf(
-            variables.alergiaPenicilina,
-            variables.tipusInfeccionsUrinariesGestants.copy().apply { valorString ="PIELONEFRITIS" }),
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.tipusInfeccionsUrinariesGestants.copy().apply { valorString ="PIELONEFRITIS" }),
         message = "Pielonefritis"
     )
     internal val urologic8: Screen = Screen(
@@ -446,10 +446,10 @@ data class Screens(val variables: Variables = Variables()) {
         name = "CEL.LULITIS LLEU",
         focus = "PELL CEL.LULITIS LLEU",
         listVar = mutableListOf(
-            variables.tipusCelulitis.copy().apply {
+            variablesGtei.tipusCelulitis.copy().apply {
                 valorString = "CEL.LULITIS LLEU"
             },
-            variables.mossegada, variables.alergiaPenicilina,
+            variablesGtei.mossegada, variablesGtei.alergiaPenicilina,
         ),
         message = "Cel.lulitis Lleu"
     )
@@ -457,11 +457,11 @@ data class Screens(val variables: Variables = Variables()) {
         name = "CEL.LULITIS MODERADA/GREU",
         focus = "PELL CEL.LULITIS LLEU",
         listVar = mutableListOf(
-            variables.tipusCelulitis.copy().apply {
+            variablesGtei.tipusCelulitis.copy().apply {
                 valorString = "CEL.LULITIS MODERADA/GREU"
             },
-            variables.fracasTractament, variables.alergiaPenicilina,
-            variables.frmr, variables.xocSeptic
+            variablesGtei.fracasTractament, variablesGtei.alergiaPenicilina,
+            variablesGtei.frmr, variablesGtei.xocSeptic
         ),
         message = "Cel.lulitis Moderada/Greu"
     )
@@ -477,11 +477,11 @@ data class Screens(val variables: Variables = Variables()) {
         name = "FASCITIS NECROTITZANT",
         focus = "PELL FASCITIS NECROTITZANT",
         listVar = mutableListOf(
-            variables.xocSeptic,
-            variables.alergiaPenicilina,
-            variables.marsa,
-            variables.alergiaSevera,
-            variables.tipusCelulitis,
+            variablesGtei.xocSeptic,
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.marsa,
+            variablesGtei.alergiaSevera,
+            variablesGtei.tipusCelulitis,
         ),
         message = "Fascitis Necrotitzant"
     )
@@ -504,8 +504,8 @@ data class Screens(val variables: Variables = Variables()) {
         name = "NOSOCOMIAL (I POSTQUIRÚRGICA)",
         focus = "NEUROLOGIC MENINGITIS BACTERIANA",
         listVar = mutableListOf(
-            variables.alergiaPenicilina,
-            variables.tipusMeningitis.copy().apply { valorString ="NEUROLOGIA NOSOCOMIAL (I POSTQUIRÚRGICA)" }
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.tipusMeningitis.copy().apply { valorString ="NEUROLOGIA NOSOCOMIAL (I POSTQUIRÚRGICA)" }
         ),
         message = "Nosocomial (i Postquirúrgica)"
     )
@@ -514,9 +514,9 @@ data class Screens(val variables: Variables = Variables()) {
         name = "QUALSEVOL EDAT, SENSE COMORBIDITAT SIGNIFICATIVA",
         focus = "NEUROLOGIC MENINGITIS BACTERIANA",
         listVar = mutableListOf(
-            variables.alergiaPenicilina,
-            variables.tipusMeningitis.copy().apply { valorString ="QUALSEVOL EDAT, SENSE COMORBIDITAT SIGNIFICATIVA" },
-            variables.tipusComorbilitat
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.tipusMeningitis.copy().apply { valorString ="QUALSEVOL EDAT, SENSE COMORBIDITAT SIGNIFICATIVA" },
+            variablesGtei.tipusComorbilitat
         ),
         message = "Qualsevol Edat, Sense Comorbiditat Significativa"
     )
@@ -525,8 +525,8 @@ data class Screens(val variables: Variables = Variables()) {
         name = "AMB IMMUNOSUPRESSIÓ",
         focus = "NEUROLOGIC AMB IMMUNOSUPRESSIÓ",
         listVar = mutableListOf(
-            variables.alergiaPenicilina,
-            variables.tipusMeningitis.copy().apply { valorString ="AMB IMMUNOSUPRESSIÓ" },
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.tipusMeningitis.copy().apply { valorString ="AMB IMMUNOSUPRESSIÓ" },
         ),
         message = "Amb Immunosupressió"
     )
@@ -563,13 +563,13 @@ data class Screens(val variables: Variables = Variables()) {
     internal val artritisSeptica1: Screen = Screen(
         name = "ARTRITIS SEPTICA < 60 ANYS \nSENSE COMORBIDITATS",
         focus = "ARTRITIS SEPTICA < 60 ANYS SENSE COMORBIDITATS",
-        listVar = mutableListOf(variables.alergiaPenicilina),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina),
         message = "Artritis Septica < 60 Anys"
     )
     internal val artritisSeptica2: Screen = Screen(
         name = "ARTRITIS SEPTICA  > 60 ANYS \nO COMORBIDITATS",
         focus = "ARTRITIS SEPTICA  > 60 ANYS O COMORBIDITATS",
-        listVar = mutableListOf(variables.alergiaPenicilina),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina),
         message = "Artritis Septica > 60 Anys"
     )
 
@@ -584,13 +584,13 @@ data class Screens(val variables: Variables = Variables()) {
     internal val endocarditis1: Screen = Screen(
         name = "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA TARDANA\n (> 1 ANY)",
         focus = "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA TARDANA (> 1 ANY)",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.fg),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg),
         message = "Endocarditis Vàlvula Tardana (> 1 any)",
     )
     internal val endocarditis2: Screen = Screen(
         name = "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA PRECOÇ \n(< 1 ANY)",
         focus = "ENDOCARDITIS VÀLVULA NADIUA/PROTÈSICA PRECOÇ (< 1 ANY)",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.fg),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg),
         message = "Endocarditis Vàlvula Precoç (< 1 any)",
     )
 
@@ -606,9 +606,9 @@ data class Screens(val variables: Variables = Variables()) {
     internal val febreNeutropenica: Screen = Screen(
         name = "FEBRE NEUTROPÈNICA",
         focus = "FEBRE NEUTROPENICA",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.fg,
-            variables.frmr, variables.xocSeptic, variables.blee, variables.isCvc,
-            variables.isFocusAbdominal, variables.isKill),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg,
+            variablesGtei.frmr, variablesGtei.xocSeptic, variablesGtei.blee, variablesGtei.isCvc,
+            variablesGtei.isFocusAbdominal, variablesGtei.isKill),
         imageResId = R.drawable.image_febre_neutropenica,
         message = "Febre Neutropènica",
     )
@@ -618,7 +618,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val infeccioDeCateter: Screen = Screen(
         name = "INFECCIÓ DE CATÈTER",
         focus = "INFECCIOCATETER",
-        listVar = mutableListOf(variables.insuficienciaRenal, variables.frmr, variables.alergiaPenicilina),
+        listVar = mutableListOf(variablesGtei.insuficienciaRenal, variablesGtei.frmr, variablesGtei.alergiaPenicilina),
         imageResId = R.drawable.image_infeccio_de_cateter,
         message = "Infecció de Catèter",
     )
@@ -627,7 +627,7 @@ data class Screens(val variables: Variables = Variables()) {
     internal val sepsisOd: Screen = Screen(
         name = "SEPSIS ORIGÈN DESCONEGUT",
         focus = "SEPSISOD",
-        listVar = mutableListOf(variables.alergiaPenicilina, variables.xocSeptic),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.xocSeptic),
         imageResId = R.drawable.image_sepsis_od,
         message = "Sepsis Origen Desconegut",
     )
@@ -641,6 +641,30 @@ data class Screens(val variables: Variables = Variables()) {
         imageResId = R.mipmap.logo_geti,
         message = "Selecciona el Focus de la Infecció",
     )
+    /**
+     * Find and copy a Screen by its "focus" value.
+     * @param focus The "focus" value to search for.
+     * @return A copy of the Screen with the given "focus" value, or null if not found.
+     * @see Screen
+     * @see findAndCopyScreenByFocus
+    */
+    internal fun findAndCopyScreenByFocus(focus: String): Screen? {
+       // all screens
+        val allScreens = listOf(
+            respiratori1, respiratori2, respiratori,
+            abdominal1, abdominal2, abdominal3c1c1, abdominal3c1c2, abdominal3c1c3, abdominal3c1c4, abdominal3c1, abdominal3c2l1, abdominal3c2l2,
+            abdominal3c2l3, abdominal3c2l4, abdominal3c2, abdominal3c3p1, abdominal3c3p2, abdominal3c3, abdominal3, abdominal,
+            urologic1b1, urologic1b2, urologic1b3, urologic1b4, urologic1, urologic2, urologic3, urologic4, urologic5, urologic6, urologic7, urologic8g1,
+            urologic8g2, urologic8g3, urologic8, urologic,
+            // ... (añadir el resto de los Screens aquí)
+        )
+
+        // find the Screen with the given "focus" value
+        val foundScreen = allScreens.find { it.focus == focus }
+
+        // copy the found Screen and return it
+        return foundScreen?.copy()
+    }
 }
 
 data class Medication(
@@ -659,6 +683,12 @@ data class Medication(
 
         internal fun getAll(codes: List<Int>): List<Medication?> {
             return codes.map { medicationDict[it] }
+        }
+
+        internal fun getAllName(codes: List<Int>): List<String> {
+            return codes.map {
+                medicationDict[it]?.name ?: ""
+            }
         }
 
         internal val medicationDict = mapOf(

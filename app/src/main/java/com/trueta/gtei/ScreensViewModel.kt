@@ -152,7 +152,7 @@ class ScreensViewModel : ViewModel() {
         val needSlider = pairMedicationTry?.second?.run { fg && weight && sex } ?: false
 
         // Check if there's any variable of type VarString with the name "alergiaPenicilina"
-        val haveApendicitis = screen.listVar.any { it.name == Variables().alergiaPenicilina.name }
+        val haveApendicitis = screen.listVar.any { it.name == VariablesGtei().alergiaPenicilina.name }
 
         // Check if there's at least one variable of type VarBool
         val hasVarBool = screen.listVar.any { it is VarBool }
@@ -190,7 +190,7 @@ class ScreensViewModel : ViewModel() {
         switches = newSwitches
     }
 
-    fun Variables.getAllVarBools(): List<VarBool> {
+    fun VariablesGtei.getAllVarBools(): List<VarBool> {
         return this::class.memberProperties.filter { it.returnType.classifier == VarBool::class }
             .mapNotNull { it as? VarBool }
     }
@@ -204,8 +204,8 @@ class ScreensViewModel : ViewModel() {
      * @param screen The Screen object containing the list of variables to be used.
      */
 // Initialize the variables only once to avoid creating multiple instances
-    private var tryAlergiaPenicilina = Variables().alergiaPenicilina.copy()
-    private var alergiaTrySevera = Variables().alergiaSevera.copy()
+    private var tryAlergiaPenicilina = VariablesGtei().alergiaPenicilina.copy()
+    private var alergiaTrySevera = VariablesGtei().alergiaSevera.copy()
 
     fun initializeSwitches(screen: Screen?) {
         // Mutable map to store the new switches
@@ -238,7 +238,7 @@ class ScreensViewModel : ViewModel() {
     fun onSubmit(currentScreen: Screen) {
         val controllerLogic = ControllerLogic()
         currentScreen.listVar.filter { variable ->
-            switches[variable.name]?.value == true && variable.name != Variables().alergiaSevera.name
+            switches[variable.name]?.value == true && variable.name != VariablesGtei().alergiaSevera.name
         }.toMutableList()
         updateVarStringValues(currentScreen)
         pairMedicationTry = controllerLogic.processTryScreen(currentScreen)
@@ -268,11 +268,11 @@ class ScreensViewModel : ViewModel() {
      */
     private fun updateAlergiaPenicilina(listVar: MutableList<Variable>) {
         // Get the name of the 'alergiaPenicilina' variable
-        val tryAlergiaPenicilina = Variables().alergiaPenicilina.name
+        val tryAlergiaPenicilina = VariablesGtei().alergiaPenicilina.name
 
         // Check if the checkboxes for 'alergiaPenicilina' and 'alergiaSevera' are checked
         val isCheckedPenicilina = isCheckboxCheckedFor(tryAlergiaPenicilina)
-        val isCheckedSevera = isCheckboxCheckedFor(Variables().alergiaSevera.name)
+        val isCheckedSevera = isCheckboxCheckedFor(VariablesGtei().alergiaSevera.name)
 
         // Find the variable in the list and update its 'valorString'
         listVar.find { it.name == tryAlergiaPenicilina }?.let { variable ->
@@ -496,8 +496,8 @@ class ScreensViewModel : ViewModel() {
         switches = mapOf()
         _resultPair = emptyList()
         updateSelectedScreen(screensGtei.start.copy())
-        tryAlergiaPenicilina = Variables().alergiaPenicilina.copy()
-        alergiaTrySevera = Variables().alergiaSevera.copy()
+        tryAlergiaPenicilina = VariablesGtei().alergiaPenicilina.copy()
+        alergiaTrySevera = VariablesGtei().alergiaSevera.copy()
         fgVar = mutableStateOf(0.0)
         weightVar = mutableStateOf(0.0)
         heightVar = mutableStateOf(0.0)
