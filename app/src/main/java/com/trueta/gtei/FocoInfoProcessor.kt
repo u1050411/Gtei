@@ -2,21 +2,44 @@ package com.trueta.gtei
 
 import com.trueta.gtei.FocoInfo.Companion.updateScreenWithCombination
 import java.io.File
+import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.FileOutputStream
 
 class FocoInfoProcessor {
-    /**
-     * Generates all possible combinations of n boolean variables.
-     */
+    // Generates all possible combinations of n boolean variables.
     private fun generateBooleanCombinations(n: Int): List<List<Boolean>> {
         if (n <= 0) return listOf(emptyList())
-        val smaller = generateBooleanCombinations(n - 1)
-        return smaller.flatMap { listOf(it + true, it + false) }
+        return generateBooleanCombinations(n - 1).flatMap { listOf(it + true, it + false) }
+    }
+    private // Función para generar el producto cartesiano de listas de listas
+    fun cartesianProduct(lists: List<List<String>>): List<List<String>> {
+        // Caso base: si la lista está vacía, retornar una lista con una lista vacía
+        if (lists.isEmpty()) return listOf(emptyList())
+
+        // Primer elemento de las listas
+        val firstList = lists.first()
+
+        // Resto de las listas
+        val remainingLists = lists.drop(1)
+
+        // Calcular el producto cartesiano del resto de las listas de forma recursiva
+        val subCartesian = cartesianProduct(remainingLists)
+
+        // Generar el producto cartesiano completo
+        val result = mutableListOf<List<String>>()
+        for (element in firstList) {
+            for (subList in subCartesian) {
+                val newList = mutableListOf(element)
+                newList.addAll(subList)
+                result.add(newList)
+            }
+        }
+
+        return result
     }
 
-    /**
-     * Generates the best combinations for a given focus of infection.
-     */
-
+    // Generates the best combinations for a given focus of infection.
     internal fun getBestCombinations(focoInfo: FocoInfo): Triple<MutableMap<String, MutableList<Pair<List<Boolean>, List<String>>>>, List<String>, Map<String, List<String>>> {
         // Fetch boolean variables dynamically
         val name = focoInfo.nombre
@@ -24,7 +47,7 @@ class FocoInfoProcessor {
         val booleanVariables = FocoInfo.booleanVariables(focoInfo.nombre)
         val booleanCombinations = generateBooleanCombinations(booleanVariables.size)
         val stringVariables = focoInfo.stringVariables
-        val stringCombinations = stringVariables.values.flatten().map { listOf(it) }
+        val stringCombinations = cartesianProduct(stringVariables.values.toList())
 
         // Generate all possible combinations of boolean and string variables
         val allCombinations = booleanCombinations.flatMap { booleanCombination ->
@@ -33,46 +56,33 @@ class FocoInfoProcessor {
             }
         }
 
-
         val treatmentMap = mutableMapOf<String, MutableList<Pair<List<Boolean>, List<String>>>>()
 
-        allCombinations.map { combination ->
+        // Simplified map operation
+        allCombinations.forEach { combination ->
             val newScreen = updateScreenWithCombination(screen.copy(), combination, booleanVariables, stringVariables.keys.toList())
-
-            // Nota: Aquí se usa newScreen en lugar de screen
-            val logicaMedicaments = DrugsLogic(newScreen)
-
             val outputInt = focoInfo.treatmentFunction(newScreen)
             val outputString = Medication.getAllName(outputInt)
-            val treatmentKey = outputInt.joinToString(",") + ";" + outputString
-
-            // Guardar la combinación de variables que resulta en este treatmentKey
+            val treatmentKey = "$outputInt;$outputString"
             treatmentMap.getOrPut(treatmentKey) { mutableListOf() }.add(combination)
         }
 
-        return Triple(treatmentMap, booleanVariables, stringVariables )
+        return Triple(treatmentMap, booleanVariables, stringVariables)
     }
 
-
-    /**
-     * Writes the best combinations for all focuses into a CSV file.
-     */
-
+    // Writes the best combinations for all focuses into a CSV file.
     fun generateAggregateCSV(
         focusName: String,
         bestCombinations: Triple<MutableMap<String, MutableList<Pair<List<Boolean>, List<String>>>>, List<String>, Map<String, List<String>>>
     ) {
         val aggregateFile = File("AllFocos.csv")
-
         aggregateFile.bufferedWriter().use { out ->
-            // Escribir la cabecera del CSV
             val booleanVarHeader = bestCombinations.second.joinToString(",")
             val stringVarHeader = bestCombinations.third.keys.joinToString(",")
             out.write("focus,$booleanVarHeader,$stringVarHeader,outputInt,outputString\n")
 
-            // Escribir cada enfoque y sus mejores combinaciones
             bestCombinations.first.forEach { (output, combinationsList) ->
-                for (combination in combinationsList) {
+                combinationsList.forEach { combination ->
                     val (outputInt, outputString) = output.split(";")
                     val booleanValues = combination.first.joinToString(",")
                     val stringValues = combination.second.joinToString(",")
@@ -82,61 +92,91 @@ class FocoInfoProcessor {
         }
     }
 
-
-    /**
-     * Writes the given lines into a CSV file.
-     */
-    fun writeLinesToFile(lines: String) {
-        val file = File(".\\app\\src\\test\\java\\com\\tpita", "Tpita.csv")
-        file.writeText(lines)
+    // Function to generate aggregate CSV for all focuses
+    fun generateAllFocosToCSV(focos: List<FocoInfo>) {
+        focos.forEach { foco ->
+            val bestCombinations = getBestCombinations(foco)
+            generateAggregateCSV(foco.nombre, bestCombinations)
+        }
     }
 
-    /**
-     * Generates a CSV file containing the best combinations for a given focus of infection.
-     */
-//    private fun generateOutputCSV(
-//        focoInfo: FocoInfo,
-//        bestCombinations: Map<String, MutableMap<String, Pair<List<Boolean>, List<String>>>>,
-//        invertedTreatmentMap: Map<Pair<List<Boolean>, List<String>>, String>
-//    ): String {
-//        val file = File(".\\app\\src\\test\\java\\com\\tpita", focoInfo.archivoCSV)
-//        if (file.exists()) {
-//            file.delete()
-//        }
-//
-//        val contentBuilder = StringBuilder()
-//
-//        // Write the CSV header
-//        val allVariables = focoInfo.booleanVariables + focoInfo.stringVariables.keys
-//        contentBuilder.append("focus,${allVariables.joinToString(",")},outputInt,outputString\n")
-//
-//        // Write each best combination
-//        for ((mainBranch, combinationsMap) in bestCombinations) {
-//            for ((output, combination) in combinationsMap) {
-//                val (outputInt, outputString) = output.split(";")
-//                contentBuilder.append("${focoInfo.nombre},${combination.first.joinToString(",")},${combination.second.joinToString(",")},${outputString},$outputInt\n")
-//            }
-//        }
-//
-//        file.writeText(contentBuilder.toString())
-//
-//        return contentBuilder.toString()
-//    }
+
+    // Function to sanitize sheet name for Excel
+    fun sanitizeSheetName(name: String): String {
+        val maxLength = 31
+        val invalidChars = listOf('\\', '/', '?', '*', '[', ']')
+
+        // Remove invalid characters and trim the string to the maximum length
+        return name.filter { it !in invalidChars }.takeLast(maxLength)
+    }
+
+    // Function to generate an Excel file with each focus in a different sheet
+    // Function to generate an Excel file with each focus in a different sheet
+// Function to generate an Excel file with each focus in a different sheet
+    fun generateAllFocosToExcel(focos: List<FocoInfo>) {
+        // Create a new Excel workbook
+        val workbook = XSSFWorkbook()
+
+        // Loop through each FocoInfo object to create a new sheet in the workbook
+        focos.forEach { foco ->
+            val bestCombinations = getBestCombinations(foco)
+
+            // Sanitize the sheet name
+            val sanitizedSheetName = sanitizeSheetName(foco.nombre)
+            val sheet = workbook.createSheet(sanitizedSheetName)
+
+            // Generate headers dynamically
+            val headerRow = sheet.createRow(0)
+            val booleanVarHeader = bestCombinations.second.joinToString(",")
+            val stringVarHeader = bestCombinations.third.keys.joinToString(",")
+            val headers = "focus,$booleanVarHeader,$stringVarHeader,outputInt,outputString".split(",")
+
+            headers.forEachIndexed { index, header ->
+                val cell = headerRow.createCell(index)
+                cell.setCellValue(header)
+            }
+
+            // Add data rows
+            var rowNum = 1
+            bestCombinations.first.forEach { (output, combinationsList) ->
+                combinationsList.forEach { combination ->
+                    val row = sheet.createRow(rowNum++)
+
+                    val focusName = foco.nombre
+                    val (outputInt, outputString) = output.split(";")
+                    val booleanValues = combination.first // No longer joined into a single string
+                    val stringValues = combination.second // No longer joined into a single string
+
+                    // Combine all the data into a single list, maintaining the order
+                    val data = listOf(focusName) + booleanValues + stringValues + listOf(outputInt, outputString)
+
+                    data.forEachIndexed { index, value ->
+                        val cell = row.createCell(index)
+                        cell.setCellValue(value.toString())
+                    }
+                }
+            }
+        }
+
+        // Write the workbook to a file
+        val fileOut = FileOutputStream("AllFocos.xlsx")
+        workbook.write(fileOut)
+        fileOut.close()
+
+        // Close the workbook
+        workbook.close()
+    }
+
+
+
+
 }
 fun main() {
-
-    // Crear una instancia de FocoInfoProcessor
+    // Create an instance of FocoInfoProcessor
     val focoInfoProcessor = FocoInfoProcessor()
-
-    val focus = focus[0]
-
-    // Supongamos que la función getBestCombinations es pública ahora, para acceder desde el main
-    val bestCombinations = focoInfoProcessor.getBestCombinations(focus)
-    focoInfoProcessor.generateAggregateCSV(focus.nombre, bestCombinations)
-//    // Generar el archivo CSV agregado para toda la información del foco
-//    focoInfoProcessor.generateAggregateCSV(mapOf(exampleFocoInfo.nombre to bestCombinations))
-//
-//    // Generar el archivo CSV de salida para el foco de ejemplo
-//    val csvContent = focoInfoProcessor.generateOutputCSV(exampleFocoInfo, bestCombinations, invertedTreatmentMap)
-    println("Contenido del CSV generado: $bestCombinations")
+    // Assuming 'focus' is a list of FocoInfo objects
+    focoInfoProcessor.generateAllFocosToExcel(focus)
+    //   val foco2 =    createFocoInfo("UROLOGIA PIELONEFRITIS AGUDA NO COMPLICADA", mapOf("Al·lèrgia Penicil·lina" to listOf("Sí", "Severa", "No")), "UROLOGIA PIELONEFRITIS AGUDA NO COMPLICADA.csv", "TpitaUnitTestUROLOGIA PIELONEFRITIS AGUDA NO COMPLICADA.kt", commonTreatmentFunction, commonIdentifyMainBranch)
+    //      val tiple = focoInfoProcessor.getBestCombinations(foco2)
+    //     focoInfoProcessor.generateAggregateCSV(foco2.nombre, tiple)
 }

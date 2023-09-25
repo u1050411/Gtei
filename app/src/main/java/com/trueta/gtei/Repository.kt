@@ -206,11 +206,11 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
 
     internal val abdominal3c1c4: Screen = Screen(
         focus = "ABDOMINAL COLECISTITIS",
-        name = "GRAU IV",
-        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.tipusColestitis.copy().apply {
+        name = "XOC SÈPTIC",
+        listVar = mutableListOf( variablesGtei.alergiaPenicilina, variablesGtei.tipusColestitis.copy().apply {
             valorString = "GRAU IV"
         }),
-        message = "Colestitis Grau IV"
+        message = "XOC SÈPTIC"
     )
     internal val abdominal3c1: Screen = Screen(
         focus = "ABDOMINAL COLECISTITIS",
@@ -245,10 +245,10 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
         message = "Colangitis Tipus III"
     )
     internal val abdominal3c2l4: Screen = Screen(
-        name = "TIPUS IV",
+        name = "XOC SÈPTIC",
         focus = "ABDOMINAL COLANGITIS",
         listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.fg, variablesGtei.tipusColangitis.copy().apply {
-            valorString = "TIPUS IV"
+            valorString = "XOC SÈPTIC"
         }),
         message = "Colangitis Tipus IV"
     )
@@ -523,7 +523,7 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
 
     internal val neurologic1b3: Screen = Screen(
         name = "AMB IMMUNOSUPRESSIÓ",
-        focus = "NEUROLOGIC AMB IMMUNOSUPRESSIÓ",
+        focus = "NEUROLOGIC MENINGITIS BACTERIANA",
         listVar = mutableListOf(
             variablesGtei.alergiaPenicilina,
             variablesGtei.tipusMeningitis.copy().apply { valorString ="AMB IMMUNOSUPRESSIÓ" },
@@ -642,28 +642,47 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
         message = "Selecciona el Focus de la Infecció",
     )
     /**
-     * Find and copy a Screen by its "focus" value.
-     * @param focus The "focus" value to search for.
-     * @return A copy of the Screen with the given "focus" value, or null if not found.
-     * @see Screen
-     * @see findAndCopyScreenByFocus
-    */
+     * Finds and returns a copy of the first Screen object that matches the given focus.
+     * If there are multiple Screen objects with the same focus, the function merges
+     * all the boolean variables from those screens into the first one found.
+     *
+     * @param focus The focus value to look for among the Screen objects.
+     * @return A copy of the first matching Screen object, with boolean variables merged
+     *         if there are multiple matches, or null if no match is found.
+     */
     internal fun findAndCopyScreenByFocus(focus: String): Screen? {
-       // all screens
+        // List of all available Screen objects
         val allScreens = listOf(
-            respiratori1, respiratori2, respiratori,
+            respiratori1, respiratori2,
             abdominal1, abdominal2, abdominal3c1c1, abdominal3c1c2, abdominal3c1c3, abdominal3c1c4, abdominal3c1, abdominal3c2l1, abdominal3c2l2,
-            abdominal3c2l3, abdominal3c2l4, abdominal3c2, abdominal3c3p1, abdominal3c3p2, abdominal3c3, abdominal3, abdominal,
+            abdominal3c2l3, abdominal3c2l4, abdominal3c2, abdominal3c3p1, abdominal3c3p2, abdominal3c3, abdominal3,
             urologic1b1, urologic1b2, urologic1b3, urologic1b4, urologic1, urologic2, urologic3, urologic4, urologic5, urologic6, urologic7, urologic8g1,
-            urologic8g2, urologic8g3, urologic8, urologic,
-            // ... (añadir el resto de los Screens aquí)
+            urologic8g2, urologic8g3, urologic8, urologic, pellIPartsToves1, pellIPartsToves1c1, pellIPartsToves1c2, pellIPartsToves2, pellIPartsToves3,
+             neurologic1b1, neurologic1b2, neurologic1b3, neurologic1, neurologic2, neurologic3, artritisSeptica1, artritisSeptica2,
+            artritisSeptica, endocarditis1, endocarditis2, endocarditis, febreNeutropenica, infeccioDeCateter, sepsisOd
+
         )
 
-        // find the Screen with the given "focus" value
-        val foundScreen = allScreens.find { it.focus == focus }
+        // Find all the Screen objects that have the given "focus"
+        val foundScreens = allScreens.filter { it.focus == focus }
 
-        // copy the found Screen and return it
-        return foundScreen?.copy()
+        // If no Screen is found, return null
+        if (foundScreens.isEmpty()) return null
+
+        // Take the first Screen found
+        val firstScreen = foundScreens.first()
+
+        // Initialize a mutable set to hold all the unique boolean variables from the found screens
+        val mergedBooleanVariables = mutableSetOf<Variable>()  // Assuming Variable is the superclass of VarBool
+
+        // Filter and add all the boolean variables from each found Screen
+        for (screen in foundScreens) {
+            val variablesBool = screen.listVar.filterIsInstance<VarBool>()  // Assuming listVar is a list of Variable
+            mergedBooleanVariables.addAll(variablesBool)
+        }
+
+        // Create a copy of the first Screen but with the merged boolean variables
+        return firstScreen.copy(listVar = mergedBooleanVariables.toList().toMutableList())
     }
 }
 

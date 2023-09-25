@@ -70,4 +70,7 @@ dependencies {
     implementation ("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
     implementation ("androidx.compose.foundation:foundation-layout:1.5.1")
     implementation ("androidx.compose.material:material:1.5.1")
+    implementation ("org.apache.poi:poi:4.1.2")
+    implementation ("org.apache.poi:poi-ooxml:4.1.2")
+
 }

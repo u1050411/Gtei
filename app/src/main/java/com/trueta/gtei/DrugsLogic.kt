@@ -32,7 +32,7 @@ class DrugsLogic(dadesOriginals: Screen) {
     private val mossegada = dades.getVariableValue(variablesGtei.mossegada.name)
     private val fracasTractament = dades.getVariableValue(variablesGtei.fracasTractament.name)
     private val multiResistent = dades.getVariableValue(variablesGtei.multiResistent.name)
-    private val frmr = dades.getVariableValue(variablesGtei.multiResistent.name)
+    private val frmr = dades.getVariableValue(variablesGtei.frmr.name)
     private val marsa = dades.getVariableValue(variablesGtei.marsa.name)
     private val focusAbdominal = dades.getVariableValue(variablesGtei.focusAbdominal.name)
     private val infeccioPiemefritisAguda =
@@ -171,12 +171,12 @@ class DrugsLogic(dadesOriginals: Screen) {
                     }
 
                     else -> {
-                        if (xocSeptic) {
+
                             when (alergiaPenicilinaString) {
                                 "Severa" -> listOf(16, 17, 19, 20)
                                 else -> listOf(12, 19)
                             }
-                        } else listOf(999)
+
                     }
                 }
 
@@ -202,7 +202,7 @@ class DrugsLogic(dadesOriginals: Screen) {
                     else -> {
                         val baseList2 =
                             if (fg) listOf(25) else listOf(19) // linezolid or vancomicina
-                        if (xocSeptic) {
+
                             when (alergiaPenicilinaString) {
                                 "Severa" -> listOf(
                                     11,
@@ -212,14 +212,14 @@ class DrugsLogic(dadesOriginals: Screen) {
                                     11,
                                     12
                                 ) + baseList2 // aztreonam, meropenem, linezolid or vancomicina
-                            }
-                        } else emptyList()
+
+                        }
                     }
                 }
 
 
                 focus.contains("PIELEMEFRITIS LLEU") ->
-                    if (tipusCelulitis != "No")
+                    if ((tipusCelulitis != "No")&&(tipusCelulitis != ""))
                         listOf(3) // Choose cloxacilina if tipusCelulitis is not "No"
                     else
                         listOf(92) // Otherwise, contact infectious disease service
@@ -438,7 +438,7 @@ class DrugsLogic(dadesOriginals: Screen) {
         return when (alergiaPenicilinaString) {
             "Severa" -> listOf(11) + (if (frmr) listOf(16) else emptyList()) + baseList
             "Sí" -> listOf(12) + baseList
-            "No" -> (if (frmr) listOf(12) else listOf(10)) + baseList
+            "No"-> (if (frmr) listOf(12) else listOf(10)) + baseList
             else -> listOf(999) // Contactar Servei Informàtic
         }
     }
