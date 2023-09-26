@@ -1,6 +1,6 @@
 package com.trueta.gtei
 
-import com.trueta.gtei.FocoInfo.Companion.updateScreenWithCombination
+
 import java.io.File
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -63,7 +63,7 @@ class FocoInfoProcessor {
 
         // Simplified map operation
         allCombinations.forEach { combination ->
-            val newScreen = updateScreenWithCombination(
+            val newScreen = FocoInfo.updateScreenWithCombination(
                 screen.copy(),
                 combination,
                 booleanVariables,
