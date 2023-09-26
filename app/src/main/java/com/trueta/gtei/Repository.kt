@@ -55,6 +55,7 @@ data class VariablesGtei(
     var isKill: VarBool = VarBool("Sospita Pell"),
     var tractamentAntifungic: VarBool = VarBool("Tractament Antifúngic"),
     var frmr: VarBool = VarBool("FRMR"),
+    var sospitaIts: VarBool = VarBool("SOSPITA ITS < 35 anys"),
     var multiResistent: VarBool = VarBool("Multi Resistent"),
     var sarm: VarBool = VarBool("SARM"),
     var enterococ: VarBool = VarBool("Enterococ"),
@@ -164,7 +165,8 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
             variablesGtei.xocSeptic,
             variablesGtei.blee,
             variablesGtei.tractamentAntifungic,
-            variablesGtei.fg
+            variablesGtei.fg,
+            variablesGtei.marsa
         ),
         message = "Abdominal Alt Risc"
     )
@@ -383,7 +385,8 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
         focus = "UROLOGIA ORQUITIS I EPIDIMITIS",
         listVar = mutableListOf(
             variablesGtei.infeccioTransmissioSexual,
-            variablesGtei.alergiaPenicilina
+            variablesGtei.alergiaPenicilina,
+            variablesGtei.frmr
         ),
         message = "Orquitis i Epidimitis"
     )
@@ -391,7 +394,7 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
     internal val urologic7: Screen = Screen(
         name = "XOC SÈPTIC",
         focus = "UROLOGIA XOC SÈPTIC",
-        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.sarm, variablesGtei.frmr),
+        listVar = mutableListOf(variablesGtei.alergiaPenicilina, variablesGtei.sarm),
         message = "Xoc Sèptic"
     )
 
@@ -618,7 +621,7 @@ data class Screens(val variablesGtei: VariablesGtei = VariablesGtei()) {
     internal val infeccioDeCateter: Screen = Screen(
         name = "INFECCIÓ DE CATÈTER",
         focus = "INFECCIOCATETER",
-        listVar = mutableListOf(variablesGtei.insuficienciaRenal, variablesGtei.frmr, variablesGtei.alergiaPenicilina),
+        listVar = mutableListOf(variablesGtei.factorRisc, variablesGtei.fg, variablesGtei.frmr, variablesGtei.xocSeptic, variablesGtei.alergiaPenicilina),
         imageResId = R.drawable.image_infeccio_de_cateter,
         message = "Infecció de Catèter",
     )

@@ -64,14 +64,14 @@ class DrugsLogic(dadesOriginals: Screen) {
                 alergiaPenicilinaString == "Severa" -> listOf(92)
                 xocSeptic -> when {
                     blee -> listOf(12, 16) + baseList
-                    alergiaPenicilinaString == "Lleu" && multiResistent && sarm -> listOf(
+                    alergiaPenicilinaString == "Sí" && multiResistent && sarm -> listOf(
                         12,
                         18,
                         21
                     )
 
-                    alergiaPenicilinaString == "Lleu" && multiResistent -> listOf(12, 17, 20)
-                    alergiaPenicilinaString == "Lleu" && sarm -> listOf(12, 17, 20)
+                    alergiaPenicilinaString == "Sí" && multiResistent -> listOf(12, 17, 20)
+                    alergiaPenicilinaString == "Sí" && sarm -> listOf(12, 17, 20)
                     else -> listOf(4, 16, 25)
                 }
 
@@ -82,9 +82,9 @@ class DrugsLogic(dadesOriginals: Screen) {
                 }
 
                 blee -> listOf(12)
-                multiResistent && alergiaPenicilinaString == "Lleu" -> listOf(12)
+                multiResistent && alergiaPenicilinaString == "Sí" -> listOf(12)
                 multiResistent -> listOf(4, 16)
-                alergiaPenicilinaString == "Lleu" -> listOf(18)
+                alergiaPenicilinaString == "Sí" -> listOf(18)
                 else -> listOf(4)
             }
 
@@ -276,11 +276,11 @@ class DrugsLogic(dadesOriginals: Screen) {
             }
 
             "UROLOGIA XOC SÈPTIC" -> when {
-                alergiaPenicilina -> listOf(11) + (if (frmr) listOf(19) else emptyList()) // aztreonam i vancomicina
+                alergiaPenicilinaString == "Severa" -> listOf(11) + (if (sarm) listOf(19) else emptyList()) // aztreonam i vancomicina
                 else -> listOf(
                     12,
                     16
-                ) + (if (frmr) listOf(19) else emptyList()) // meropenem i amikacina i vancomicina
+                ) + (if (sarm) listOf(19) else emptyList()) // meropenem i amikacina i vancomicina
             }
 
             "UROLOGIA INFECCIONS URINÀRIES EN GESTANTS" -> when (tipusInfeccionsUrinariesGestants) {
@@ -435,7 +435,8 @@ class DrugsLogic(dadesOriginals: Screen) {
 
     private fun tractamentInfeccioCateter(): List<Int> {
         val baseList = if (fg) 23 else 19
-        return when (alergiaPenicilinaString) {
+        return if (factorRisc) listOf(baseList)
+        else when (alergiaPenicilinaString) {
             "Severa" -> listOf(11) + (if (frmr) listOf(16) else emptyList()) + baseList
             "Sí" -> listOf(12) + baseList
             "No"-> (if (frmr) listOf(12) else listOf(10)) + baseList
