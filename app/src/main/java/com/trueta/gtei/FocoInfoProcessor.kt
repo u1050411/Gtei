@@ -69,7 +69,9 @@ class FocoInfoProcessor {
                 booleanVariables,
                 stringVariables.keys.toList()
             )
-            val outputInt = focoInfo.treatmentFunction(newScreen)
+            val sortedOutPutInt = focoInfo.treatmentFunction(newScreen).toMutableList()
+            sortedOutPutInt.sort()
+            val outputInt: List<Int> = sortedOutPutInt.toList()
             val outputString = Medication.getAllName(outputInt)
             val treatmentKey = "$outputInt;$outputString"
             treatmentMap.getOrPut(treatmentKey) { mutableListOf() }.add(combination)
